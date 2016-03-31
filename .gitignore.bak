@@ -12,4 +12,3 @@ target/
 bbzweb.iml
 /build
 dispatcher-servlet.xml
-WeixinConstEnum.java
