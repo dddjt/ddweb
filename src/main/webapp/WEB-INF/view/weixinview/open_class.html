@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+		<meta name="keywords" content="" />
+		<meta name="description" content="" />
+		<title>点豆大讲堂</title>
+		<link rel="stylesheet" href="/css/weixincss/bootstrap.min.css">
+		<link rel="stylesheet" href="/css/weixincss/style.css">
+		<link rel="stylesheet" href="/css/weixincss/indexv2.css">
+		<link rel="stylesheet" href="/css/weixincss/course.css" />
+	</head>
+	<body style="mrgin-bottom:0px;">
+		<!--标题-->
+		<h1 class="text-center mantoutitle">点豆公开课</h1>
+		<!--轮播-->
+		<div id="myCarousel" class="carousel slide" data-ride="carousel">
+			<!-- Indicators -->
+			<ol class="carousel-indicators slideicon">
+				<li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+				<li data-target="#myCarousel" data-slide-to="1"></li>
+				<li data-target="#myCarousel" data-slide-to="2"></li>
+				<li data-target="#myCarousel" data-slide-to="3"></li>
+			</ol>
+
+			<!-- Wrapper for slides -->
+			<div class="carousel-inner" role="listbox">
+				<div class="item active">
+					<a >
+						<img id="banner1" class="slideimg" alt="首页轮播图">
+					</a>
+				</div>
+				<div class="item">
+					<a>
+						<img id="banner2" class="slideimg" alt="首页轮播图">
+					</a>
+				</div>
+				<div class="item">
+					<a>
+						<img id="banner3" class="slideimg" alt="首页轮播图">
+					</a>
+				</div>
+				<div class="item">
+					<a>
+						<img id="banner4" class="slideimg" alt="首页轮播图">
+					</a>
+				</div>
+			</div>
+		</div>
+		<div class="courselist">
+			<ul id="courseList">
+			</ul>
+		</div>
+	</body>
+	<script src="/js/weixinjs/jquery.js"></script>
+	<script src="/js/weixinjs/bootstrap.min.js"></script>
+	<script src="/js/weixinjs/swipe.js"></script>
+	<script src="https://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+	<script>
+	var imgUrl = "http://www.diandou.me/img/weixinimg/share_img.jpg";
+	var lineLink = window.location.href;
+	var descContent = "点豆成兵---为进取心而生，专注职场“传、帮、带”";
+	var shareTitle = "点豆成兵";
+			var hasWriteShareInfo = false;
+			$(function() {
+				$("#myCarousel").touchwipe({
+					wipeLeft: function() {
+						jQuery("#myCarousel").carousel('next');
+					},
+					wipeRight: function() {
+						jQuery("#myCarousel").carousel('prev');
+					},
+					min_move_x: 20,
+					preventDefaultEvents: true
+				});
+			});
+			document.getElementById('banner1').src = "/files/bannerimgs/banner1.jpg?" + new Date().getTime();
+			document.getElementById('banner2').src = "/files/bannerimgs/banner2.jpg?" + new Date().getTime();
+			document.getElementById('banner3').src = "/files/bannerimgs/banner3.jpg?" + new Date().getTime();
+			document.getElementById('banner4').src = "/files/bannerimgs/banner4.jpg?" + new Date().getTime();
+			function checkJsonIsEmpty(json) {
+				var isEmpty = true;
+				if (json == null) return true;
+				for (var jsonKey in json) {
+					isEmpty = false;
+					break;
+				}
+				return isEmpty;
+			}
+			$.ajax({
+				url: '/course/getAllOpenCourse',
+				type: "POST",
+				data: {},
+				success: function(data) {
+					if (!checkJsonIsEmpty(data)) {
+						var detailNode = document.getElementById('courseList');
+						for (var i in data) {
+							var liNode = document.createElement('li');
+							liNode.setAttribute('class', 'course-list-item clearfix');
+							liNode.setAttribute('course_id', data[i].id);
+							liNode.innerHTML = "<div class='item-avatar'><img src='/files/imgs/"+data[i].image+"'/></div><div class='item-content'><h3 class='item-title'>"+data[i].name+"</h3><div class='item-teacher'><span class='menter'><span class='glyphicon glyphicon-user'></span>"+data[i].teacher+"</span></div></div>";
+							detailNode.appendChild(liNode);
+							if(!hasWriteShareInfo) {
+								hasWriteShareInfo = true;
+								imgUrl = "http://www.diandou.me/files/imgs/" + data[i].image;
+								descContent = data[i].teacher;
+								shareTitle = data[i].name;
+							}
+						}
+						$('.course-list-item.clearfix').each(function(){
+							$(this).click(function(event) {
+								var elem = this;
+								var course_id = elem.getAttribute('course_id');
+								window.location = "/course/playCourse?course_id=" + course_id;
+							});
+						});
+					}
+				},
+				error: function(status, error) {
+				}
+			});
+			function getJsConfigInfoSuccess(data,status) {
+				wx.config({
+					appId: 'wxbd6aef840715f99d',
+					timestamp: data.timestamp,
+					nonceStr: data.nonceStr,
+					signature: data.signature,
+					jsApiList: [
+						'onMenuShareQQ',
+						'onMenuShareTimeline',
+						'onMenuShareAppMessage'
+					]
+				});
+			}
+			$.ajax({ 
+			    type : "POST", 
+			    url  : "/getJsConfigInfo?url=" + encodeURIComponent(location.href.split('#')[0]),
+			    async: false,
+			    success : getJsConfigInfoSuccess 
+			});
+			wx.ready(function(){
+				var appid = 'wx309df15b6ddc5371';
+				setTimeout(function(){
+					wx.onMenuShareTimeline({
+					    title: shareTitle, // 分享标题
+					    link: lineLink, // 分享链接
+					    imgUrl: imgUrl, // 分享图标
+					    success: function () { 
+					        // 用户确认分享后执行的回调函数
+					    },
+					    cancel: function () { 
+					        // 用户取消分享后执行的回调函数
+					    }
+					});
+					wx.onMenuShareAppMessage({
+					    title: shareTitle, // 分享标题
+					    desc: descContent, // 分享描述
+					    link: lineLink, // 分享链接
+					    imgUrl: imgUrl, // 分享图标
+					    type: '', // 分享类型,music、video或link，不填默认为link
+					    dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+					    success: function () { 
+					        // 用户确认分享后执行的回调函数
+					    },
+					    cancel: function () { 
+					        // 用户取消分享后执行的回调函数
+					    }
+					});
+					wx.onMenuShareQQ({
+					    title: shareTitle, // 分享标题
+					    desc: descContent, // 分享描述
+					    link: lineLink, // 分享链接
+					    imgUrl: imgUrl, // 分享图标
+					    success: function () { 
+					       // 用户确认分享后执行的回调函数
+					    },
+					    cancel: function () { 
+					       // 用户取消分享后执行的回调函数
+					    }
+					});
+				}, 500);
+			});
+		</script>
+</html>
