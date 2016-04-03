@@ -71,22 +71,16 @@ result = WeixinTools.getSign("http://www.diandou.me/weixin/weixinLogin?view=ddcb
 	/* text-shadow: 1px 1px 1px rgba(127, 127, 127, 0.3); */
 }
 .vip_class:after {
-	content: "VIP专享";
+	content: "VIP";
 	position: absolute;
-	top: 10px;
-	right: -25px;
-	height: 20px;
-	width: 90px;
+	top: 6px;
+	height: 20px !important;
+	width: 25px;
 	line-height: 20px;
-	font-size: 10px;
+	font-size: 11px;
 	text-align: center;
 	color: #ffffff;
 	background: #66d6a6;
-	transform: rotate(45deg);
-    -ms-transform: rotate(45deg);
-	-moz-transform: rotate(45deg);
-    -webkit-transform: rotate(45deg);
-    -o-transform: rotate(45deg);
 }
 .mui-segmented-control.mui-segmented-control-inverted .mui-control-item.mui-active
 	{
@@ -373,9 +367,9 @@ div.screening>ul>li {
 								</div>
 							</li>
 							<% } else { %>
-							<li class="mui-table-view-cell mui-media" course_path='/playDDCBOpenClass?course_id=<%=cm.getId() %>'>
+							<li class="mui-table-view-cell mui-media vip_class" course_path='/playDDCBOpenClass?course_id=<%=cm.getId() %>'>
 								<img class="mui-media-object mui-pull-left" style="height:70px;width:100px;max-width:100px;" src="/files/imgs/<%=cm.getImage()%>">
-								<div class="mui-media-body vip_class">
+								<div class="mui-media-body">
 									<h4 style="font-size:15px;margin-top:0px;margin-bottom:0px;"><%=cm.getName() %></h4>
 									<h6 style="margin-top:0px;margin-bottom:0px;height:39px;line-height:39px;color:#2ab888;" class='mui-ellipsis'><span style="font-size:16px;" class="mui-icon mui-icon-contact"></span><%=cm.getTeacher() %></h6>
 									<%if(cm.getHasCollection() == null || cm.getHasCollection() == 0) { %>
@@ -548,8 +542,12 @@ div.screening>ul>li {
             				for (i in data) {
 	    						var rootNode = document.getElementById("data_list");
 	    						var liNode = document.createElement('li');
-	    						liNode.setAttribute('class', 'mui-table-view-cell mui-media');
 	    						liNode.setAttribute('course_path', '/playDDCBOpenClass?course_id='+data[i].id);
+	    						if(data[i].courseGrade == "收费") {
+	    							liNode.setAttribute('class', 'mui-table-view-cell mui-media vip_class');
+	    						} else {
+	    							liNode.setAttribute('class', 'mui-table-view-cell mui-media');
+	    						}
 	    						if(data[i].hasCollection == null || data[i].hasCollection == 0) {
 	    							liNode.innerHTML = "<img class='mui-media-object mui-pull-left' style='height:70px;width:100px;max-width:100px;' src='/files/imgs/"+data[i].image+"'><div class='mui-media-body'><h4 style='font-size:15px;margin-top:0px;margin-bottom:0px;'>"+data[i].name+"</h4><h6 style='margin-top:0px;margin-bottom:0px;height:39px;line-height:39px;color:#2ab888;' class='mui-ellipsis'><span style='font-size:16px;' class='mui-icon mui-icon-contact'></span>"+data[i].teacher+"</h6><p style='margin-bottom:0px;margin-top:0px;font-size:12px;' class='mui-ellipsis'><span style='font-size:16px;' class='mui-icon mui-icon-compose'></span><span>"+data[i].course_length+"分钟&nbsp;&nbsp;"+data[i].study_people_count+"人学习&nbsp;&nbsp;</span><span course_id='"+data[i].id+"' has_collection='0' style='font-size:21px;float:right;' class='mui-icon mui-icon-star collection_course'></span></p></div>";
 	    						} else {
@@ -622,7 +620,11 @@ div.screening>ul>li {
     						rootNode.innerHTML = "";
             				for (i in data) {
 	    						var liNode = document.createElement('li');
-	    						liNode.setAttribute('class', 'mui-table-view-cell mui-media');
+	    						if(data[i].courseGrade == "收费") {
+	    							liNode.setAttribute('class', 'mui-table-view-cell mui-media vip_class');
+	    						} else {
+	    							liNode.setAttribute('class', 'mui-table-view-cell mui-media');
+	    						}
 	    						liNode.setAttribute('course_path', '/playDDCBOpenClass?course_id='+data[i].id);
 	    						if(data[i].hasCollection == null || data[i].hasCollection == 0) {
 	    							liNode.innerHTML = "<img class='mui-media-object mui-pull-left' style='height:70px;width:100px;max-width:100px;' src='/files/imgs/"+data[i].image+"'><div class='mui-media-body'><h4 style='font-size:15px;margin-top:0px;margin-bottom:0px;'>"+data[i].name+"</h4><h6 style='margin-top:0px;margin-bottom:0px;height:39px;line-height:39px;color:#2ab888;' class='mui-ellipsis'><span style='font-size:16px;' class='mui-icon mui-icon-contact'></span>"+data[i].teacher+"</h6><p style='margin-bottom:0px;margin-top:0px;font-size:12px;' class='mui-ellipsis'><span style='font-size:16px;' class='mui-icon mui-icon-compose'></span><span>"+data[i].course_length+"分钟&nbsp;&nbsp;"+data[i].study_people_count+"人学习&nbsp;&nbsp;</span><span course_id='"+data[i].id+"' has_collection='0' style='font-size:21px;float:right;' class='mui-icon mui-icon-star collection_course'></span></p></div>";
