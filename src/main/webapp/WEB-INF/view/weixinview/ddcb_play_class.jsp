@@ -28,6 +28,7 @@ long currentTime = System.currentTimeMillis();
 int userStatus = 0;
 if(wum != null && wum.getPay_status() == 1 && wum.getExpiration_time().getTime()>=currentTime) userStatus = 1;
 if(wum != null && wum.getPay_status() == 1 && wum.getExpiration_time().getTime()<currentTime) userStatus = 2;
+if(cm.getCourseGrade() != null && ("免费").equals(cm.getCourseGrade()))  userStatus = 1;
 %>
 <!DOCTYPE html>
 <html lang="zh-CN">
