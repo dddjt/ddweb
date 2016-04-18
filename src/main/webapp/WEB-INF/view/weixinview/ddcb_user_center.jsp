@@ -261,7 +261,7 @@ List<LiveCourseModel> userStudyRecordCourseList = userStudyRecordDao.getUserStud
 					<a href="#course_collection" class="mui-navigate-right" style="font-size:15px;"><span class="mui-icon mui-icon-star"></span>课程收藏</a>
 				</li>
 				<li class="mui-table-view-cell">
-					<a href="#buy_live_class" class="mui-navigate-right" style="font-size:15px;"><span class="mui-icon mui-icon-mic"></span>已购买直播讲座</a>
+					<a href="#buy_live_class" class="mui-navigate-right" style="font-size:15px;"><span class="mui-icon mui-icon-mic"></span>已购买录播讲座</a>
 				</li>
 			</ul>
 			<ul class="mui-table-view mui-table-view-chevron" style="margin-top:10px;">
@@ -355,7 +355,7 @@ List<LiveCourseModel> userStudyRecordCourseList = userStudyRecordDao.getUserStud
 					<div id="tabtip" class="container" style="background-color:white;">
 						<ul id="myTab" class="nav nav-tabs row mantoutab" style="padding-left:0px;padding-right:0px;">
 							<li class="col-xs-6 text-center active"><a vinfo="open_class" class="center-block" data-toggle="tab">公开课</a></li>
-							<li class="col-xs-6 text-center"><a vinfo="live_class" class="center-block" data-toggle="tab">直播课</a></li>
+							<li class="col-xs-6 text-center"><a vinfo="live_class" class="center-block" data-toggle="tab">录播课</a></li>
 						</ul>
 					</div>
 					<div class="content">
@@ -387,7 +387,7 @@ List<LiveCourseModel> userStudyRecordCourseList = userStudyRecordDao.getUserStud
 							<div class="tab-pane fade in" id="live_class">
 								<div class="container" style="padding-left:0px;padding-right:0px;">
 									<%if(collectionLiveCourseList == null || collectionLiveCourseList.size() == 0) { %>
-										<div style="margin-top:50%;text-align:center;">您还没有收藏任何直播课！</div>
+										<div style="margin-top:50%;text-align:center;">您还没有收藏任何录播课！</div>
 									<%} else { %>
 										<ul id="collection_live_class_data_list" class="mui-table-view">
 											<%for(LiveCourseModel lcm : collectionLiveCourseList) { %>
@@ -458,13 +458,13 @@ List<LiveCourseModel> userStudyRecordCourseList = userStudyRecordDao.getUserStud
 				<button type="button" class="mui-left mui-action-back mui-btn  mui-btn-link mui-btn-nav mui-pull-left">
 					<span class="mui-icon mui-icon-left-nav" style="color:white;"></span>
 				</button>
-				<h1 class="mui-center mui-title" style="color:white;">已购买直播讲座</h1>
+				<h1 class="mui-center mui-title" style="color:white;">已购买录播讲座</h1>
 			</div>
 			<div class="mui-page-content">
 				<div class="mui-scroll-wrapper">
 					<div class="mui-scroll">					
 						<%if(buyCourseList == null || buyCourseList.size() == 0) { %>
-							<div style="margin-top:50%;text-align:center;">您还没有购买过直播讲座！</div>
+							<div style="margin-top:50%;text-align:center;">您还没有购买过录播讲座！</div>
 						<%} else { %>
 							<ul id="buy_live_class_data_list" class="mui-table-view">
 								<%for(CourseModel cm : buyCourseList) { %>
@@ -515,8 +515,8 @@ List<LiveCourseModel> userStudyRecordCourseList = userStudyRecordDao.getUserStud
 							</div>
 							<div class="mui-card" style="margin:0px 5px;">
 								<ul class="mui-table-view">
-									<li class="mui-table-view-cell"><p style="margin-top:0px;">免费直播讲座到点直接观看，无需报名</p></li>
-									 <li class="mui-table-view-cell"><p style="margin-top:0px;">在线观看大讲堂全部讲座，付费直播除外</p></li>
+									<li class="mui-table-view-cell"><p style="margin-top:0px;">免费录播讲座到点直接观看，无需报名</p></li>
+									 <li class="mui-table-view-cell"><p style="margin-top:0px;">在线观看大讲堂全部讲座，付费录播除外</p></li>
 							         <li class="mui-table-view-cell"><p>优先入导师答疑群，与导师互动</p></li>
 							         <li class="mui-table-view-cell"><p>线下活动优先参加</p></li>
 							         <li class="mui-table-view-cell"><p>持续更新讲座内容</p></li>
@@ -651,11 +651,11 @@ List<LiveCourseModel> userStudyRecordCourseList = userStudyRecordDao.getUserStud
     			var courseHasEnd = this.getAttribute('course_has_end');
     			var coursePath = this.getAttribute('course_path');
     			if(courseHasEnd == "1") {
-    				alert("当前直播讲座已经结束， 感谢您的关注！");
+    				alert("当前录播讲座已经结束， 感谢您的关注！");
     			} else if(coursePath != "") {
     				window.location.href=this.getAttribute('course_path');
     			} else {
-    				 var confirmDialog = mui.createConfirmDialog('您还没有购买当前直播讲座，无法观看！',"点击购买",
+    				 var confirmDialog = mui.createConfirmDialog('您还没有购买当前录播讲座，无法观看！',"点击购买",
     					function() {
     						confirmDialog.close();
     					},
@@ -875,7 +875,7 @@ List<LiveCourseModel> userStudyRecordCourseList = userStudyRecordDao.getUserStud
     mui('#user_study_record_data_list li').each(function(){
 		this.addEventListener('tap',function(){
 			if(this.getAttribute('course_path') == "") {
-				alert("该直播讲座已经结束，无法进入，感谢您的关注！");
+				alert("该录播讲座已经结束，无法进入，感谢您的关注！");
 			} else {
 				window.location.href=this.getAttribute('course_path');
 			}

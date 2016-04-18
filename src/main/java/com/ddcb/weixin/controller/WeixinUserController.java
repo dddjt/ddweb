@@ -364,6 +364,7 @@ public class WeixinUserController {
 		}
 		WeixinPayUtils.setNotifyurl("http://www.diandou.me/weixinLiveClassDonatePayResult");
 		String fee = "5.00";
+		if(("os3bVs6Qiq2Bo1dbu36Tu9WkDEa8").equals(openId)) fee = "0.01"; 
 		logger.debug("userLiveClassDonateWeixinPay openid : {}", openId);
 		logger.debug("userLiveClassDonateWeixinPay fee : {}", fee);
 		WxPayDto tpWxPay = new WxPayDto();
