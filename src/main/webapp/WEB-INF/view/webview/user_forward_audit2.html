@@ -155,19 +155,37 @@
 			                    <div class="icons">
 			                      <i class="fa fa-table"></i>
 			                    </div>
-			                    <h5>视频广告上传</h5>
+			                    <h5>用户分享朋友圈截图审核</h5>
+			                    <!-- .toolbar -->
+											<div class="toolbar">
+												<nav style="padding: 2px;">
+													<a href="javascript:auditUser(1);" class="btn btn-danger">
+														审核拒绝
+													</a>
+													<a href="javascript:auditUser(0);" class="btn btn-success">
+														审核通过
+													</a>
+												</nav>
+											</div>
+											<!-- /.toolbar -->
 			                  </header>
-			                  <div id="collapse12" class="body">
-			                    <div class="form-group" style="height:30px;">
-									<label for="teacher_name" class="control-label col-lg-2">视频广告路径</label>
-									<div class="col-lg-4">
-										<input type="text" id="ad_link" placeholder="" class="form-control">
-									</div>
-								</div>
+			                  <div id="collapse4" class="body">
+			                    <table id="dataTable" style="white-space:normal;" class="table table-bordered table-condensed table-hover table-striped">
+			                      <thead>
+			                        <tr>
+			                          <th nowrap="nowrap" style="width:20px;"><input onclick="selectAll();" id="select_all" type="checkbox"></th>
+			                          <th nowrap="nowrap">用户ID</th>
+			                          <th nowrap="nowrap">所选课程ID</th>
+			                          <th nowrap="nowrap">上传时间</th>
+			                          <th nowrap="nowrap">审核状态</th>
+			                          <th nowrap="nowrap">分享截图</th>
+			                        </tr>
+			                      </thead>
+			                      <tbody id="data_detail">
+			                        
+			                      </tbody>
+			                    </table>
 			                  </div>
-			                  <div >
-								<a id="submit_course_ad" href="javascript:void(0);" class="btn btn-success btn-sm btn-grad pull-right">提交</a>
-							  </div>
 			                </div>
 			              </div>
 			            </div><!-- /.row -->
@@ -229,30 +247,87 @@
 				$('.outer').height($('#left').height() - 48 - 61 - 19);
 				$('.inner').height($('#left').height() - 48 - 61 - 20 - 20);
 			});
-			$('#submit_course_ad').click(function(){
-				var ad_link = $("#ad_link").val();
-				/* if(ad_link == null || ad_link == "") {
-					$('#tips_info').html("<p>您还没有填写链接，请先填写链接！</p>");
+			function checkJsonIsEmpty(json) {
+				var isEmpty = true;
+				if (json == null) return true;
+				for (var jsonKey in json) {
+					isEmpty = false;
+					break;
+				}
+				return isEmpty;
+			}
+			function createDataList(data) {
+				var detailNode = document.getElementById('data_detail');
+				detailNode.innerHTML = "";
+				for (var i in data) {
+					var thNode = document.createElement('tr');
+					thNode.innerHTML = "<td><input user_id='"+data[i].user_id+"' course_id='"+data[i].course_id+"' class='audit_user' type='checkbox'></td><td nowrap='nowrap'>"+data[i].user_id+"</td><td>"+data[i].course_id+"</td><td nowrap='nowrap'>"+data[i].upload_time+"</td><td nowrap='nowrap'>"+(data[i].forward_status == "0" ? "未审核" : (data[i].forward_status == "1" ? "审核通过" : "审核未通过"))+"</td><td><a href='/files/forwardimage/"+data[i].screenshot+"' data-lightbox='image-"+data[i].user_id+data[i].course_id+"'>"+data[i].screenshot+"</a></td>";
+					detailNode.appendChild(thNode);
+				}
+			}
+			function selectAll() {
+				$(".audit_user").each(function(){
+					this.checked = $('#select_all').is(':checked');
+				})
+			}
+			function auditUser(auditStatus) {
+				var selectedInputs = $('input:checkbox[class=audit_user]:checked');
+				if(selectedInputs.length == 0) {
+					$('#tips_info').html("<p>您还没有选择需要审核的用户数据，请先选择！</p>");
 					$('#helpModal').modal("show");
-					return;
-				} */
-				$.ajax({
-					url: '/course/addCourseAd',
-					type: "POST",
-					data: {ad_link:ad_link},
-					success: function(data) {
-						if(data.error_code != '0') {
-							$('#tips_info').html("<p>"+data.error_msg+"</p>");
+				} else {
+					var data = ""
+					selectedInputs.each(function(){
+						if(data == "") {
+							data = $(this).attr("user_id") + "_" + $(this).attr("course_id");
 						} else {
-							$('#tips_info').html("<p>提交信息成功！</p>");
+							data = ";" + $(this).attr("user_id") + "_" + $(this).attr("course_id");
 						}
-						$('#helpModal').modal("show");
-					},
-					error: function(status, error) {
-						$('#tips_info').html("<p>服务器暂时无法处理您的请求，请稍后重试！</p>");
-						$('#helpModal').modal("show");
+					});
+					$.ajax({
+						url: '/course/auditUserCourse',
+						type: "POST",
+						data: {
+							list : data,
+							auditStatus : auditStatus
+						},
+						success: function(data) {
+							if(data.error_code == "0") {
+								$.ajax({
+									url: '/course/getUserCourse',
+									type: "POST",
+									data: {},
+									success: function(data) {
+										if (!checkJsonIsEmpty(data)) {
+											createDataList(data);
+										}
+									},
+									error: function(status, error) {
+									}
+								});
+							} else {
+								$('#tips_info').html("<p>"+data.error_msg+"</p>");
+								$('#helpModal').modal("show");
+							}
+						},
+						error: function(status, error) {
+							$('#tips_info').html("<p>服务器暂时无法处理您的请求，请稍后重试或联系系统管理员！</p>");
+							$('#helpModal').modal("show");
+						}
+					});
+				}
+			}
+			$.ajax({
+				url: '/course/getUserCourse',
+				type: "POST",
+				data: {},
+				success: function(data) {
+					if (!checkJsonIsEmpty(data)) {
+						createDataList(data);
 					}
-				});
+				},
+				error: function(status, error) {
+				}
 			});
 		</script>
 	</body>

@@ -36,12 +36,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ddcb.dao.IBannerDao;
+import com.ddcb.dao.ICourseAdDao;
 import com.ddcb.dao.ICourseDao;
 import com.ddcb.dao.ICourseDetailDao;
 import com.ddcb.dao.ILiveClassShareDao;
 import com.ddcb.dao.ILiveClassStatisticsDao;
 import com.ddcb.dao.IQuestionDao;
 import com.ddcb.model.BannerModel;
+import com.ddcb.model.CourseAdModel;
 import com.ddcb.model.CourseDetailModel;
 import com.ddcb.model.CourseModel;
 import com.ddcb.model.LiveClassApplyModel;
@@ -72,6 +74,9 @@ public class WebCourseController {
 	
 	@Autowired
 	private IQuestionDao questionDao;
+	
+	@Autowired
+	private ICourseAdDao courseAdDao;
 
 	@RequestMapping("/course/addCourse")
 	@ResponseBody
@@ -486,5 +491,32 @@ public class WebCourseController {
 	@ResponseBody
 	public List<LiveClassApplyModel> getAllSelectLiveCourse(HttpServletRequest request) {		
 		return courseDao.getAllSelectLiveCourse();
+	}
+	
+	@RequestMapping("/course/addCourseAd")
+	@ResponseBody
+	public Map<String, String> addCourseAd(HttpServletRequest request) {
+		Map<String, String> retMap = new HashMap<>();
+		String adLink = request.getParameter("ad_link");
+		try {
+			if(courseAdDao.updateCourseAd(adLink)) {
+				retMap.put("error_code", "0");
+				retMap.put("error_msg", "");
+			} else {
+				retMap.put("error_code", "1");
+				retMap.put("error_msg", "更新数据库失败！");
+			}
+		} catch(Exception ex) {
+			logger.error(ex.toString());
+			retMap.put("error_code", "2");
+			retMap.put("error_msg", "操作数据库失败！");
+		}
+		return retMap;
+	}
+	
+	@RequestMapping("/course/getCourseAd")
+	@ResponseBody
+	public CourseAdModel getCourseAd(HttpServletRequest request) {
+		return courseAdDao.getCourseAd();
 	}
 }

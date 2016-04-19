@@ -2,9 +2,11 @@
 <%@ page import="org.springframework.web.context.support.WebApplicationContextUtils"%>
 <%@ page import="org.springframework.web.context.WebApplicationContext"%>
 <%@ page import="com.ddcb.dao.ICourseDetailDao"%>
+<%@ page import="com.ddcb.dao.ICourseAdDao"%>
 <%@ page import="com.ddcb.dao.ICourseDao"%>
 <%@ page import="com.ddcb.dao.IWeixinUserDao"%>
 <%@ page import="com.ddcb.model.CourseModel"%>
+<%@ page import="com.ddcb.model.CourseAdModel"%>
 <%@ page import="com.ddcb.model.CourseDetailModel"%>
 <%@ page import="com.ddcb.model.WeixinUserModel"%>
 <%@ page import="com.ddcb.utils.WeixinTools"%>
@@ -14,6 +16,7 @@
 WebApplicationContext wac = WebApplicationContextUtils.getRequiredWebApplicationContext(this.getServletContext());
 ICourseDetailDao courseDetailDao = (ICourseDetailDao)wac.getBean("courseDetailDao");
 ICourseDao courseDao = (ICourseDao)wac.getBean("courseDao");
+ICourseAdDao courseAdDao = (ICourseAdDao)wac.getBean("courseAdDao");
 IWeixinUserDao weixinUserDao = (IWeixinUserDao)wac.getBean("weixinUserDao");
 List<CourseDetailModel> list = null;
 long id = Long.valueOf((String)request.getParameter("course_id"));
@@ -29,6 +32,11 @@ int userStatus = 0;
 if(wum != null && wum.getPay_status() == 1 && wum.getExpiration_time().getTime()>=currentTime) userStatus = 1;
 if(wum != null && wum.getPay_status() == 1 && wum.getExpiration_time().getTime()<currentTime) userStatus = 2;
 if(cm.getCourseGrade() != null && ("免费").equals(cm.getCourseGrade()))  userStatus = 1;
+CourseAdModel cam = courseAdDao.getCourseAd();
+int hasAd = 0;
+if(cam != null && cam.getAd_link() != null && !cam.getAd_link().isEmpty()) {
+	hasAd = 1;
+}
 %>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -270,6 +278,14 @@ if(cm.getCourseGrade() != null && ("免费").equals(cm.getCourseGrade()))  userS
 	<script src="/js/weixinjs/jquery.js"></script>
 	<script src="https://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
 	<script>
+	var courseAdLink = "";
+	<%
+		if(hasAd == 1) {
+			%>
+			courseAdLink = '<%=cam.getAd_link()%>';
+			<%
+		}
+	%>
 	document.getElementById('video').setAttribute("width", document.body.clientWidth);
 	/* document.addEventListener("WeixinJSBridgeReady", function () {
 		document.getElementById('video').play();
@@ -334,6 +350,27 @@ if(cm.getCourseGrade() != null && ("免费").equals(cm.getCourseGrade()))  userS
 	        $(".navbar-fixed-bottom").show();
 	    }
 	});
+	var isPlayingAd = false;
+	var hasFinishPlayAd = false;
+	if(courseAdLink != "") {
+		document.getElementById("video").addEventListener('play', function() {
+			if(!isPlayingAd && !hasFinishPlayAd) {
+				document.getElementById("video").pause();
+				isPlayingAd = true;
+				var tmp = $("#video_src").attr('src');
+				$("#video_src").attr('src', courseAdLink);
+				 document.getElementById('video').load();
+				 document.getElementById('video').play();
+				 document.getElementById("video").addEventListener('ended', function() {
+					   if(hasFinishPlayAd) return;
+					   $("#video_src").attr('src', tmp);
+					   hasFinishPlayAd = true;
+					   document.getElementById('video').load();
+					   document.getElementById('video').play(); 
+				 });
+			}		  
+		   });
+	}
 	$("#course_list li").click(function() {
 	   if($(this).attr('data_src') == "") {
 		   /* var confirmDialog = mui.createConfirmDialog('您不是VIP会员，只能观看课时1的视频！观看更多视频，请购买VIP会员！',
@@ -359,12 +396,12 @@ if(cm.getCourseGrade() != null && ("免费").equals(cm.getCourseGrade()))  userS
 			})
 	   } else {
 		   $("#video_src").attr('src', $(this).attr('data_src'));
-		   $("#course_list li").each(function(){
-			   $(this).attr('style', 'font-size:15px;');
-		   });
-		   $(this).attr('style', 'font-size:15px;color:#22cc99;');
-		   document.getElementById('video').load();
-		   document.getElementById('video').play();  
+			   $("#course_list li").each(function(){
+				   $(this).attr('style', 'font-size:15px;');
+			   });
+			   $(this).attr('style', 'font-size:15px;color:#22cc99;');
+			   document.getElementById('video').load();
+			   document.getElementById('video').play();
 	   }
 	});
 	$.ajax({
