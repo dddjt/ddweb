@@ -391,7 +391,11 @@
 <script src="/js/weixinjs/mui.pullToRefresh.js"></script>
 <script src="/js/weixinjs/mui.pullToRefresh.material.js"></script>
 <script src="https://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+<script src="/js/weixinjs/fastclick.js"></script>
 <script type="text/javascript" charset="utf-8">
+window.addEventListener( "load", function() {
+	FastClick.attach( document.body );
+}, false );
 var imgUrl = "http://www.diandou.me/img/weixinimg/share_img.jpg";
 var lineLink = window.location.href;
 var descContent = "点豆大讲堂---为进取心而生，专注职场“传、帮、带”";
@@ -407,7 +411,7 @@ mui.createConfirmDialog = function(info, btnInfo, cancelCallBack, acceptCallBack
 	element.classList.add('dialog');
 	element.innerHTML = template.replace('{{info}}', info);
 	element.innerHTML = element.innerHTML.replace('{{btnInfo}}', btnInfo);
-	element.addEventListener('touchmove', mui.preventDefault);
+	//element.addEventListener('touchmove', mui.preventDefault);
 	var mask = [element];
 	mask._show = false;
 	mask.show = function() {
@@ -473,8 +477,6 @@ mui.createConfirmDialog = function(info, btnInfo, cancelCallBack, acceptCallBack
 			});
 		    var currentImageSelectEle;
 		    function uploadShareImage(courseId, ele, e) {
-		    	e.preventDefault();
-		    	e.stopPropagation();
 		    	currentImageSelectEle = ele;
 		    	 var confirmDialog = mui.createConfirmDialog("<div><p style='color:#2ab888;'>提示：各位看官，给我们点鼓励吧，好内容录制不易，要做下去需要各位都参与或贡献哦～</p></div><div>方式一：免费<p>点击讲座标题进入教室，将该讲座分享至朋友圈即可报名成功。</p></div><div>方式二：打赏5元<p>如不愿分享，支付5元报名费即可报名成功。</p></div>","取消",
 	    					function() {
