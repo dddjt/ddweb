@@ -528,6 +528,9 @@
 		<!-- Metis demo scripts -->
 		<script src="/js/webjs/app.js"></script>
 		<script>
+		String.prototype.replaceAll = function(s1,s2) { 
+		    return this.replace(new RegExp(s1,"gm"),s2); 
+		}
 			var course_menu_count = 1;
 			function delCourseMenu() {
 				if(course_menu_count == 1) return;
