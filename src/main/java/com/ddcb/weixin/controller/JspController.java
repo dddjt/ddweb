@@ -21,6 +21,12 @@ public class JspController {
 		return "view/weixinview/ddcb_play_class";
 	}
 	
+	@RequestMapping("/getDDCBDreamClass")
+	public String getDDCBDreamClass(HttpSession httpSession,
+			HttpServletRequest request) {
+		return "view/weixinview/ddcb_dream_class";
+	}
+	
 	@RequestMapping("/weixin/getDDCBBuyVip")
 	public String getDDCBBuyVip(HttpSession httpSession,
 			HttpServletRequest request) {

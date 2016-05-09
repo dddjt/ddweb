@@ -459,11 +459,11 @@ public class WeixinUserController {
 		WeixinPayUtils.setNotifyurl("http://www.diandou.me/weixinVIPPayResult");
 		String fee = "";
 		if(("1").equals(userType)) {
-			fee = "45.00";
+			fee = "200.00";
 		} else if(("2").equals(userType)) {
-			fee = "120.00";
+			fee = "500.00";
 		} else {
-			fee = "365.00";
+			fee = "1200.00";
 		}
 		if(("os3bVs6Qiq2Bo1dbu36Tu9WkDEa8").equals(openId)) fee = "0.01";
 		logger.debug("userChooseWeixinPay openid : {}", openId);

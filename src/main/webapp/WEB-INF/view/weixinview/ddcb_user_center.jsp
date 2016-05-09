@@ -495,17 +495,17 @@ List<LiveCourseModel> userStudyRecordCourseList = userStudyRecordDao.getUserStud
 						<div style="margin-top:10px;height:65px;">
 							<div user_type="1" price="45.00" class="buy_vip" style="border-radius:3px;margin:5px 5px;width:30%;height:60px;background-image: url('/img/weixinimg/vip_blue.png');float:left;">
 								<div><p style="color:white;margin-left:2px;margin-bottom:0px;font-weight: bold;">月会员</p></div>
-								<div><p style="text-align:center;color:white;margin-bottom:0px;">&yen;45.00</p></div>
+								<div><p style="text-align:center;color:white;margin-bottom:0px;">&yen;200.00</p></div>
 								<div><p style="margin-right:5px;color:white;float:right;font-size:10px;border: 1px;">点击购买</p></div>
 							</div>
 							<div user_type="2" price="120.00" class="buy_vip" style="border-radius:3px;margin:5px 5px;width:30%;height:60px;background-image: url('/img/weixinimg/vip_pur.png');float:left;">
 								<div><p style="color:white;margin-left:2px;margin-bottom:0px;font-weight: bold;">季会员</p></div>
-								<div><p style="text-align:center;color:white;margin-bottom:0px;">&yen;120.00</p></div>
+								<div><p style="text-align:center;color:white;margin-bottom:0px;">&yen;500.00</p></div>
 								<div><p style="margin-right:5px;color:white;float:right;font-size:10px;">点击购买</p></div>
 							</div>
 							<div user_type="3" price="365.00" class="buy_vip" style="border-radius:3px;margin:5px 5px;width:30%;height:60px;background-image: url('/img/weixinimg/vip_yellow.png');float:left;">
 								<div><p style="color:white;margin-left:2px;margin-bottom:0px;font-weight: bold;">年会员</p></div>
-								<div><p style="text-align:center;color:white;margin-bottom:0px;">&yen;365.00</p></div>
+								<div><p style="text-align:center;color:white;margin-bottom:0px;">&yen;1200.00</p></div>
 								<div><p style="margin-right:5px;color:white;float:right;font-size:10px;">点击购买</p></div>
 							</div>
 						</div>

@@ -280,7 +280,7 @@ if(cam != null && cam.getAd_link() != null && !cam.getAd_link().isEmpty()) {
 	<script>
 	var courseAdLink = "";
 	<%
-		if(hasAd == 1) {
+		if(hasAd == 1 && ("免费").equals(cm.getCourseGrade())) {
 			%>
 			courseAdLink = '<%=cam.getAd_link()%>';
 			<%

@@ -11,11 +11,9 @@
 <%
 WebApplicationContext wac = WebApplicationContextUtils.getRequiredWebApplicationContext(this.getServletContext());
 ICourseDao courseDao = (ICourseDao)wac.getBean("courseDao");
-IBannerDao bannerDao = (IBannerDao)wac.getBean("bannerDao");
 String userId = (String) session.getAttribute("openid");
 //userId="os3bVs6Qiq2Bo1dbu36Tu9WkDEa8";
-List<CourseModel> list = courseDao.getOpenCourseByCondition(userId, 1,8, "最新", "全部", "全部", "全部", "免费", "");
-List<BannerModel> bannerList = bannerDao.getAllBanner();
+List<CourseModel> list = courseDao.getOpenCourseByCondition(userId, 1,8, "最新", "全部", "全部", "全部", "收费", "");
 String code = (String)session.getAttribute("url_code");
 Map<String, String> result = new HashMap<>();
 result = WeixinTools.getSign("http://www.diandou.me/weixin/weixinLogin?view=ddcb_open_class&code="+code+"&state=123");
@@ -132,7 +130,7 @@ div.screening>ul>li {
 /* grade */
 .search-eject {
 	position: fixed;
-	top: 49px;
+	top: -82px;
 	width: 100%;
 	height: 170px;
 	z-index: 11;
@@ -157,7 +155,7 @@ div.screening>ul>li {
 }
 
 .grade-w-roll {
-	top: 220px;
+	top: 90px;
 }
 
 .grade-w-roll::after {
@@ -198,72 +196,13 @@ div.screening>ul>li {
 </head>
 <body>
 	<header class="mui-bar mui-bar-nav" style="background-color: #66d6a6;z-index:999999999;">
-		<h1 class="mui-title" style="color: white;">其它分享</h1>
+		<h1 class="mui-title" style="color: white;">梦想笔记</h1>
 		<a id="searchButton" href="#searchInput"
 			style="color: white; font-size: 25px; font-weight: 600;"
 			class="mui-icon mui-icon-search mui-pull-right"></a>
 	</header>
 	<div class="mui-content">
-		<div id="content_top" style="margin-top: 5px;">
-			<div id="slider" class="mui-slider"
-				style="width: 100%; max-height: 130px; height: 130px; z-index: 100;background-color:white;">
-				<div class="mui-slider-group mui-slider-loop">
-					<!-- 额外增加的一个节点(循环轮播：第一个节点是最后一张轮播) -->
-					<div
-						course_path="/playDDCBOpenClass?course_id=<%=bannerList.get(3).getCourse_id() %>"
-						class="mui-slider-item mui-slider-item-duplicate">
-						<a href="#"> <img
-							src="http://www.diandou.me/files/bannerimgs/banner4.jpg">
-						</a>
-					</div>
-					<!-- 第一张 -->
-					<div
-						course_path="/playDDCBOpenClass?course_id=<%=bannerList.get(0).getCourse_id() %>"
-						class="mui-slider-item">
-						<a href="#"> <img
-							src="http://www.diandou.me/files/bannerimgs/banner1.jpg">
-						</a>
-					</div>
-					<!-- 第二张 -->
-					<div
-						course_path="/playDDCBOpenClass?course_id=<%=bannerList.get(1).getCourse_id() %>"
-						class="mui-slider-item">
-						<a href="#"> <img
-							src="http://www.diandou.me/files/bannerimgs/banner2.jpg">
-						</a>
-					</div>
-					<!-- 第三张 -->
-					<div
-						course_path="/playDDCBOpenClass?course_id=<%=bannerList.get(2).getCourse_id() %>"
-						class="mui-slider-item">
-						<a href="#"> <img
-							src="http://www.diandou.me/files/bannerimgs/banner3.jpg">
-						</a>
-					</div>
-					<!-- 第四张 -->
-					<div
-						course_path="/playDDCBOpenClass?course_id=<%=bannerList.get(3).getCourse_id() %>"
-						class="mui-slider-item">
-						<a href="#"> <img
-							src="http://www.diandou.me/files/bannerimgs/banner4.jpg">
-						</a>
-					</div>
-					<!-- 额外增加的一个节点(循环轮播：最后一个节点是第一张轮播) -->
-					<div
-						course_path="/playDDCBOpenClass?course_id=<%=bannerList.get(0).getCourse_id() %>"
-						class="mui-slider-item mui-slider-item-duplicate">
-						<a href="#"> <img
-							src="http://www.diandou.me/files/bannerimgs/banner1.jpg">
-						</a>
-					</div>
-				</div>
-				<div class="mui-slider-indicator">
-					<div class="mui-indicator mui-active"></div>
-					<div class="mui-indicator"></div>
-					<div class="mui-indicator"></div>
-					<div class="mui-indicator"></div>
-				</div>
-			</div>
+		<div id="content_top">
 			<div class="screening" style="z-index:199;">
 				<ul>
 					<li class="industry" style="font-size:10px;">行业</li>
@@ -337,11 +276,23 @@ div.screening>ul>li {
 				<%if(list == null || list.isEmpty()) {%>
 				<div style="margin-top:50%;text-align:center;">暂时没有数据，请稍后重试！</div>
 				<%} else {%>
-				<div id="pullrefresh" class="mui-content mui-scroll-wrapper" style="margin-top:180px;">
+				<div id="pullrefresh" class="mui-content mui-scroll-wrapper" style="margin-top:48px;">
 					<div class="mui-scroll">
 					<ul id="data_list" class="mui-table-view">
 						<%for(CourseModel cm : list) { %>
-							<%if(("免费").equals(cm.getCourseGrade())) {%>
+							<li class="mui-table-view-cell mui-media" course_path='/playDDCBOpenClass?course_id=<%=cm.getId() %>'>
+								<img class="mui-media-object mui-pull-left" style="height:70px;width:100px;max-width:100px;" src="/files/imgs/<%=cm.getImage()%>">
+								<div class="mui-media-body">
+									<h4 style="font-size:15px;margin-top:0px;margin-bottom:0px;"><%=cm.getName() %></h4>
+									<h6 style="margin-top:0px;margin-bottom:0px;height:39px;line-height:39px;color:#2ab888;" class='mui-ellipsis'><span style="font-size:16px;" class="mui-icon mui-icon-contact"></span><%=cm.getTeacher() %></h6>
+									<%if(cm.getHasCollection() == null || cm.getHasCollection() == 0) { %>
+										<p style="margin-bottom:0px;margin-top:0px;font-size:12px;" class='mui-ellipsis'><span style="font-size:16px;" class="mui-icon mui-icon-compose"></span><span><%=cm.getCourse_length()%>分钟&nbsp;&nbsp;<%=cm.getStudy_people_count() %>人学习&nbsp;&nbsp;</span><span course_id="<%=cm.getId() %>" has_collection="0" style="font-size:21px;float:right;" class="mui-icon mui-icon-star collection_course"></span></p>								
+									<%} else {%>
+										<p style="margin-bottom:0px;margin-top:0px;font-size:12px;" class='mui-ellipsis'><span style="font-size:16px;" class="mui-icon mui-icon-compose"></span><span><%=cm.getCourse_length()%>分钟&nbsp;&nbsp;<%=cm.getStudy_people_count() %>人学习&nbsp;&nbsp;</span><span course_id="<%=cm.getId() %>" has_collection="1" style="font-size:21px;float:right;" class="mui-icon mui-icon-starhalf collection_course"></span></p>
+									<%} %>		
+								</div>
+							</li>
+							<%-- <%if(("免费").equals(cm.getCourseGrade())) {%>
 							<li class="mui-table-view-cell mui-media" course_path='/playDDCBOpenClass?course_id=<%=cm.getId() %>'>
 								<img class="mui-media-object mui-pull-left" style="height:70px;width:100px;max-width:100px;" src="/files/imgs/<%=cm.getImage()%>">
 								<div class="mui-media-body">
@@ -367,7 +318,7 @@ div.screening>ul>li {
 									<%} %>		
 								</div>
 							</li>
-							<% } %>
+							<% } %> --%>
 						<%} %>
 					</ul>
 					</div>
@@ -429,7 +380,7 @@ div.screening>ul>li {
 			var selectField = "全部";
 			var selectIndustry = "全部";
 			var selectCompetency = "全部";
-			var selectGrade = "免费";
+			var selectGrade = "收费";
 			var selectKey = "";
 			function searchKeyCancel() {
 				mui('#searchInput').popover('toggle');
@@ -532,7 +483,7 @@ div.screening>ul>li {
 	    						var liNode = document.createElement('li');
 	    						liNode.setAttribute('course_path', '/playDDCBOpenClass?course_id='+data[i].id);
 	    						if(data[i].courseGrade == "收费") {
-	    							liNode.setAttribute('class', 'mui-table-view-cell mui-media vip_class');
+	    							liNode.setAttribute('class', 'mui-table-view-cell mui-media');
 	    						} else {
 	    							liNode.setAttribute('class', 'mui-table-view-cell mui-media');
 	    						}
@@ -609,7 +560,7 @@ div.screening>ul>li {
             				for (i in data) {
 	    						var liNode = document.createElement('li');
 	    						if(data[i].courseGrade == "收费") {
-	    							liNode.setAttribute('class', 'mui-table-view-cell mui-media vip_class');
+	    							liNode.setAttribute('class', 'mui-table-view-cell mui-media');
 	    						} else {
 	    							liNode.setAttribute('class', 'mui-table-view-cell mui-media');
 	    						}
@@ -710,20 +661,6 @@ div.screening>ul>li {
 					mui('#latestOrHotest')[0].setAttribute("class", currentClass.replace("grade-w-roll", ""));
 				} else {
 					mui('#latestOrHotest')[0].setAttribute("class", currentClass + " grade-w-roll");
-				}
-			});
-			mui('.courseGrade')[0].addEventListener('tap',function(){
-				mui('.grade-w-roll').each(function(){
-					var currentClass = this.getAttribute("class");
-					if(currentClass.indexOf("courseGrade") == -1) {
-						this.setAttribute("class", currentClass.replace("grade-w-roll", ""));
-					}
-				});
-				var currentClass = mui('#courseGrade')[0].getAttribute("class");
-				if(currentClass.indexOf("grade-w-roll") != -1) {
-					mui('#courseGrade')[0].setAttribute("class", currentClass.replace("grade-w-roll", ""));
-				} else {
-					mui('#courseGrade')[0].setAttribute("class", currentClass + " grade-w-roll");
 				}
 			});
 			function clickLatestOrHotest(ele) {
