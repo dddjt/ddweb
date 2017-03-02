@@ -17,17 +17,26 @@ WebApplicationContext wac = WebApplicationContextUtils.getRequiredWebApplication
 ICourseDetailDao courseDetailDao = (ICourseDetailDao)wac.getBean("courseDetailDao");
 ICourseDao courseDao = (ICourseDao)wac.getBean("courseDao");
 ICourseAdDao courseAdDao = (ICourseAdDao)wac.getBean("courseAdDao");
+IWeixinUserDao weixinUserDao = (IWeixinUserDao)wac.getBean("weixinUserDao");
 List<CourseDetailModel> list = null;
 long id = Long.valueOf((String)request.getParameter("course_id"));
 session.setAttribute("course_id", String.valueOf(id));
 CourseModel cm = courseDao.getCourseByCourseId(id);
 list = courseDetailDao.getCourseDetailByCourseId(id);
+Map<String, String> result = new HashMap<>();
+result = WeixinTools.getSign("http://www.diandou.me/playDDCBOpenClass?course_id=" + id);
+String userId = (String)session.getAttribute("openid");
+WeixinUserModel wum = weixinUserDao.getWeixinUserByUserId(userId);
 long currentTime = System.currentTimeMillis();
-/* CourseAdModel cam = courseAdDao.getCourseAd();
+int userStatus = 0;
+if(wum != null && wum.getPay_status() == 1 && wum.getExpiration_time().getTime()>=currentTime) userStatus = 1;
+if(wum != null && wum.getPay_status() == 1 && wum.getExpiration_time().getTime()<currentTime) userStatus = 2;
+if(cm.getCourseGrade() != null && ("免费").equals(cm.getCourseGrade()))  userStatus = 1;
+CourseAdModel cam = courseAdDao.getCourseAd();
 int hasAd = 0;
 if(cam != null && cam.getAd_link() != null && !cam.getAd_link().isEmpty()) {
 	hasAd = 1;
-} */
+}
 %>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -38,7 +47,7 @@ if(cam != null && cam.getAd_link() != null && !cam.getAd_link().isEmpty()) {
 		<meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
 		<meta name="keywords" content="" />
 		<meta name="description" content="" />
-		<title>梦想星辰</title>
+		<title>点豆大讲堂</title>
 		<link rel="stylesheet" href="/css/weixincss/bootstrap.min.css">
 		<link rel="stylesheet" href="/css/weixincss/style.css">
 		<link rel="stylesheet" href="/css/weixincss/newplay.css">
@@ -184,6 +193,11 @@ if(cam != null && cam.getAd_link() != null && !cam.getAd_link().isEmpty()) {
 			<div id="myTabContent" class="tab-content">
 				<div class="tab-pane fade in active" id="menu">
 					<div class="container" style="padding-left:0px;padding-right:0px;">
+						<%if(userStatus == 0) {%>
+							<p style="margin-top:10px;margin-left:18px;font-size:10px;">非VIP会员只能观看课时1的视频, <a href="/weixin/getDDCBBuyVip" style="font-size:12px;text-decoration: none;color:#22cc99;">请购买VIP</a>！</p>
+						<%} else if(userStatus == 2){ %>
+							<p style="margin-top:10px;margin-left:18px;font-size:10px;">您的VIP会员已经到期,<a href="/weixin/getDDCBBuyVip" style="font-size:12px;text-decoration: none;color:#22cc99;">请购买VIP</a>！</p>
+						<%} %>
 						<ul id="course_list" class="mui-table-view" style="margin-top:10px;">
 						<%
 							int index = 1;
@@ -194,9 +208,15 @@ if(cam != null && cam.getAd_link() != null && !cam.getAd_link().isEmpty()) {
 									}
 								}
 								if(index != 1) {
-						%>	
-									<li class="mui-table-view-cell" style="font-size:15px;" id="course_list_<%=index %>" data_src="<%=cdm.getVideosrc()%>"><span style='float:left;'>课时<%=index %>:<%=cdm.getSubTitle()%></span><span style='float:right;'><%=cdm.getCourse_time_length()%></span></li>												
+									if(userStatus != 1) {
+						%>						
+							 			<li class="mui-table-view-cell" id="" style="font-size:15px;" data_src=""><span style='float:left;'>课时<%=index %>:<%=cdm.getSubTitle()%></span><span style='float:right;'><%=cdm.getCourse_time_length()%></span></li>
 						<%
+									} else {			
+						%>
+										<li class="mui-table-view-cell" style="font-size:15px;" id="course_list_<%=index %>" data_src="<%=cdm.getVideosrc()%>"><span style='float:left;'>课时<%=index %>:<%=cdm.getSubTitle()%></span><span style='float:right;'><%=cdm.getCourse_time_length()%></span></li>										
+						<%
+									}
 								} else {
 						%>
 									<li class="mui-table-view-cell" style="font-size:15px;color:#22cc99;" id="course_list_<%=index %>" data_src="<%=cdm.getVideosrc()%>" style="color:#22cc99;"><span style='float:left;'>课时<%=index %>:<%=cdm.getSubTitle()%></span><span style='float:right;'><%=cdm.getCourse_time_length()%></span></li>
@@ -245,7 +265,7 @@ if(cam != null && cam.getAd_link() != null && !cam.getAd_link().isEmpty()) {
 		<div class="weui_dialog_confirm" id="comfirm_dialog" style="display: none;">
 	        <div class="weui_mask"></div>
 	        <div class="weui_dialog">
-	            <div class="weui_dialog_hd"><strong class="weui_dialog_title">梦想星辰</strong></div>
+	            <div class="weui_dialog_hd"><strong class="weui_dialog_title">点豆大讲堂</strong></div>
 	            <div class="weui_dialog_bd" id="comfirm_dialog_tips"></div>
 	            <div class="weui_dialog_ft">
 	                <a onclick="dialogClickCancel()" class="weui_btn_dialog default">取消</a>
@@ -256,10 +276,20 @@ if(cam != null && cam.getAd_link() != null && !cam.getAd_link().isEmpty()) {
 	</body>
 	<script src="/js/weixinjs/mui.min.js"></script>
 	<script src="/js/weixinjs/jquery.js"></script>
+	<script src="https://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
 	<script>
-	<%-- var courseAdLink = "";
-	courseAdLink = '<%=cam.getAd_link()%>'; --%>
+	var courseAdLink = "";
+	<%
+		if(hasAd == 1 && ("免费").equals(cm.getCourseGrade())) {
+			%>
+			courseAdLink = '<%=cam.getAd_link()%>';
+			<%
+		}
+	%>
 	document.getElementById('video').setAttribute("width", document.body.clientWidth);
+	/* document.addEventListener("WeixinJSBridgeReady", function () {
+		document.getElementById('video').play();
+	}); */
 	function dialogClickCancel(){
 		document.getElementById("comfirm_dialog").style.display = "none";
 		document.getElementById("comfirm_dialog_tips").innerHTML = "";
@@ -322,7 +352,7 @@ if(cam != null && cam.getAd_link() != null && !cam.getAd_link().isEmpty()) {
 	});
 	var isPlayingAd = false;
 	var hasFinishPlayAd = false;
-	/* if(courseAdLink != "") {
+	if(courseAdLink != "") {
 		document.getElementById("video").addEventListener('play', function() {
 			if(!isPlayingAd && !hasFinishPlayAd) {
 				document.getElementById("video").pause();
@@ -340,15 +370,112 @@ if(cam != null && cam.getAd_link() != null && !cam.getAd_link().isEmpty()) {
 				 });
 			}		  
 		   });
-	} */
+	}
 	$("#course_list li").click(function() {
-		$("#video_src").attr('src', $(this).attr('data_src'));
-		   $("#course_list li").each(function(){
-			   $(this).attr('style', 'font-size:15px;');
-		   });
-		   $(this).attr('style', 'font-size:15px;color:#22cc99;');
-		   document.getElementById('video').load();
-		   document.getElementById('video').play();
+	   if($(this).attr('data_src') == "") {
+		   /* var confirmDialog = mui.createConfirmDialog('您不是VIP会员，只能观看课时1的视频！观看更多视频，请购买VIP会员！',
+				function() {
+					//confirmDialog.close();
+				},
+				function() {
+					//confirmDialog.close();
+					window.location.href="/weixin/getDDCBBuyVip";
+				}
+			);
+			confirmDialog.show();
+		   return; */
+		   /* document.getElementById("comfirm_dialog_tips").innerHTML = "您不是VIP会员，只能观看课时1的视频！观看更多视频，请购买VIP会员！";
+		   document.getElementById("comfirm_dialog").style.display = ""; */
+		   var btnArray = ['购买', '取消'];
+			mui.confirm('您不是VIP会员，只能观看课时1的视频！观看更多视频，请购买VIP会员！', '点都大讲堂', btnArray, function(e) {
+				if (e.index == 0) {
+					window.location.href="/weixin/getDDCBBuyVip";
+				} else {
+					return;
+				}
+			})
+	   } else {
+		   $("#video_src").attr('src', $(this).attr('data_src'));
+			   $("#course_list li").each(function(){
+				   $(this).attr('style', 'font-size:15px;');
+			   });
+			   $(this).attr('style', 'font-size:15px;color:#22cc99;');
+			   document.getElementById('video').load();
+			   document.getElementById('video').play();
+	   }
+	});
+	$.ajax({
+		url: "/course/addStudyRecord",
+		type: "POST",
+		data: {courseId:<%=id%>},
+		success: function(data) {
+		},
+		error: function(status, error) {
+		}
+	});
+	var imgUrl = "http://www.diandou.me/img/weixinimg/share_img.jpg";
+	var lineLink = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxbd6aef840715f99d&redirect_uri=http%3A%2F%2Fwww.diandou.me%2Fweixin%2FweixinLogin%3Fview%3Dddcb_open_class&response_type=code&scope=snsapi_userinfo&state=123#wechat_redirect";
+	var descContent = "点豆成兵---为进取心而生，专注职场“传、帮、带”";
+	var shareTitle = "点豆成兵";
+	var shareCircleTitle = "<%=cm.getName()%>-<%=cm.getTeacher()%>-[点豆大讲堂]";
+	<%if(list != null && !list.isEmpty()) {%>
+		imgUrl = "http://www.diandou.me/files/imgs/<%=list.get(0).getTeacher_image()%>";
+		<%-- descContent = "<%=list.get(0).getDetails().replaceAll("\r\n", "")%>";
+		shareTitle = "<%=list.get(0).getSubTitle().replaceAll("\r\n", "")%>"; --%>
+		descContent = "主讲人：<%=cm.getTeacher()%>";
+		shareTitle = "<%=cm.getName()%>-[点豆大讲堂]";
+	<%}%>
+	wx.config({
+		appId: 'wxbd6aef840715f99d',
+		timestamp: <%=result.get("timestamp")%>,
+		nonceStr: '<%=result.get("nonceStr")%>',
+		signature: '<%=result.get("signature")%>',
+		jsApiList: [
+			'onMenuShareQQ',
+			'onMenuShareTimeline',
+			'onMenuShareAppMessage'
+		]
+	});
+	wx.ready(function(){
+		setTimeout(function(){
+			wx.onMenuShareTimeline({
+			    title: shareCircleTitle, // 分享标题
+			    link: lineLink, // 分享链接
+			    imgUrl: imgUrl, // 分享图标
+			    success: function () { 
+			        // 用户确认分享后执行的回调函数
+			    },
+			    cancel: function () { 
+			        // 用户取消分享后执行的回调函数
+			    }
+			});
+			wx.onMenuShareAppMessage({
+			    title: shareTitle, // 分享标题
+			    desc: descContent, // 分享描述
+			    link: lineLink, // 分享链接
+			    imgUrl: imgUrl, // 分享图标
+			    type: '', // 分享类型,music、video或link，不填默认为link
+			    dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+			    success: function () { 
+			        // 用户确认分享后执行的回调函数
+			    },
+			    cancel: function () { 
+			        // 用户取消分享后执行的回调函数
+			    }
+			});
+			wx.onMenuShareQQ({
+			    title: shareTitle, // 分享标题
+			    desc: descContent, // 分享描述
+			    link: lineLink, // 分享链接
+			    imgUrl: imgUrl, // 分享图标
+			    success: function () { 
+			       // 用户确认分享后执行的回调函数
+			    },
+			    cancel: function () { 
+			       // 用户取消分享后执行的回调函数
+			    }
+			});
+		}, 500);
 	});
 	</script>
 </html>

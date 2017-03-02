@@ -136,7 +136,7 @@ function userLogin() {
 		success : function(data) {
 			mask.close();
 			if (data.error_code == "0") {
-				window.location = "recent_class.html";
+				window.location = "/getLiveClass";
 			} else {
 				mui.createTipDialog(data.error_msg, null).show();
 			}

@@ -99,4 +99,16 @@ public class CommonController {
 		logger.debug("resultMap :{}", result.toString());
 		return result;
 	}
+	
+	@RequestMapping("/getLiveClass")
+	public String getLiveClass(HttpSession httpSession,
+			HttpServletRequest request) {
+		//String phone_id = (String) request.getSession().getAttribute("WEIXIN_REG_USER_ID");
+		/*if(phone_id == null || phone_id.isEmpty()) {
+			return "redirect:/view/weixinview/login.html";
+		} else {
+			return "view/weixinview/ddcb_live_class";
+		}*/
+		return "view/weixinview/ddcb_live_class";
+	}
 }

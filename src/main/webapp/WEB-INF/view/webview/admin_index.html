@@ -4,7 +4,7 @@
 	<head>
 		<meta charset="UTF-8">
 
-		<title>点豆成兵</title>
+		<title>梦想星辰</title>
 
 		<!--IE Compatibility modes-->
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -67,7 +67,7 @@
 							<img class="media-object img-thumbnail user-img" style="width:64px;height:64px;" alt="User Picture" src="/img/webimg/qrcode.jpg">
 						</a>
 						<div class="media-body">
-							<h5 class="media-heading">欢迎登录点豆成兵</h5>
+							<h5 class="media-heading">欢迎登录梦想星辰</h5>
 							<ul class="list-unstyled user-info">
 								<li>Administrator</li>
 							</ul>
@@ -88,12 +88,12 @@
 							<i class="fa fa-book"></i><span class="link-title">&nbsp;课程列表</span>
 						</a>
 					</li>
-					<li class="">
+					<!-- <li class="">
 						<a href="open_class_banner.html">
 							<i class="fa fa-align-justify"></i><span class="link-title">&nbsp;公开课Banner</span>
 						</a>
-					</li>
-					<li class="">
+					</li> -->
+					<!-- <li class="">
 						<a href="live_class_share.html">
 							<i class="fa fa-share-alt"></i><span class="link-title">&nbsp;直播课程分享链接</span>
 						</a>
@@ -119,18 +119,18 @@
 							<i class="fa fa-legal"></i><span class="link-title">&nbsp;视频广告</span>
 						</a>
 					</li>
-					<li class="nav-divider"></li>
+					<li class="nav-divider"></li> -->
 					<li class="">
 						<a href="weixin_user_list.html">
-							<i class="fa fa-user"></i><span class="link-title">&nbsp;微信用户列表</span>
+							<i class="fa fa-user"></i><span class="link-title">&nbsp;注册用户列表</span>
 						</a>
 					</li>
-					<li class="nav-divider"></li>
+					<!-- <li class="nav-divider"></li>
 					<li class="">
 						<a href="live_class_statistic.html">
 							<i class="fa fa-align-left"></i><span class="link-title">&nbsp;直播课程统计信息</span>
 						</a>
-					</li>
+					</li> -->
 					<li class="nav-divider"></li>
 					<li>
 						<a href="/web/webUserLogout">
@@ -235,7 +235,7 @@
 													</div>
 												</div>
 												<!-- /.form-group -->
-												<div class="form-group">
+												<div class="form-group" style="display:none;">
 													<label for="course_length" class="control-label col-lg-4">课程价格(单位：元)</label>
 													<div class="col-lg-8">
 														<input type="text" id="course_price" placeholder="" class="form-control" value="0">
@@ -247,6 +247,14 @@
 														<input type="text" id="course_length" placeholder="" class="form-control">
 													</div>
 												</div>
+											 	<div class="form-group" style="display:none;">
+							                        <label class="control-label col-lg-4">所属机构</label>
+							                        <div class="col-lg-8">
+							                          <select id="org_type" class="form-control">
+							                            <option value='-1'>不属于任何机构</option>
+							                          </select>
+							                        </div>
+							                      </div>
 												 <div class="form-group">
 							                        <label class="control-label col-lg-4">课程类型</label>
 							                        <div class="col-lg-8">
@@ -256,7 +264,7 @@
 							                          </select>
 							                        </div>
 							                      </div>
-							                      <div class="form-group">
+							                      <div class="form-group" style="display:none;">
 							                        <label class="control-label col-lg-4">课程领域</label>
 							                        <div class="col-lg-8">
 							                          <select id="course_field" class="form-control">
@@ -264,7 +272,7 @@
 							                          </select>
 							                        </div>
 							                      </div>
-							                      <div class="form-group">
+							                      <div class="form-group" style="display:none;">
 							                        <label class="control-label col-lg-4">课程行业</label>
 							                        <div class="col-lg-8">
 							                          <select id="course_industry" class="form-control">
@@ -295,7 +303,7 @@
 							                          </select>
 							                        </div>
 							                      </div>
-							                      <div class="form-group">
+							                      <div class="form-group" style="display:none;">
 							                        <label class="control-label col-lg-4">课程职能</label>
 							                        <div class="col-lg-8">
 							                          <select id="course_competency" class="form-control">
@@ -310,7 +318,7 @@
 							                          </select>
 							                        </div>
 							                      </div>
-							                      <div class="form-group">
+							                      <div class="form-group"  style="display:none;">
 							                        <label class="control-label col-lg-4">课程费用</label>
 							                        <div class="col-lg-8">
 							                          <select id="course_grade" class="form-control">
@@ -329,7 +337,7 @@
 														</div>
 													</div>
 												</div> -->
-												<div class="form-group">
+												<div class="form-group"  style="display:none;">
 													<label for="teacher_name" class="control-label col-lg-4">课程学习人数</label>
 													<div class="col-lg-8">
 														<input type="text" id="course_study_count" placeholder="默认为0，后台自动生成" class="form-control">
@@ -528,6 +536,35 @@
 		<!-- Metis demo scripts -->
 		<script src="/js/webjs/app.js"></script>
 		<script>
+		function checkJsonIsEmpty(json) {
+			var isEmpty = true;
+			if (json == null) return true;
+			for (var jsonKey in json) {
+				isEmpty = false;
+				break;
+			}
+			return isEmpty;
+		}
+		function createOrgOptionList(data) {
+			var detailNode = document.getElementById('org_type');
+			var optSrc = "<option value='-1'>不属于任何机构</option>";
+			for (var i in data) {
+				optSrc += "<option value='"+data[i].id+"'>"+data[i].org_name+"</option>";
+			}
+			detailNode.innerHTML = optSrc;
+		}
+		$.ajax({
+			url: '/course/getAllOrgInfo',
+			type: "POST",
+			data: {},
+			success: function(data) {
+				if (!checkJsonIsEmpty(data)) {
+					createOrgOptionList(data);
+				}
+			},
+			error: function(status, error) {
+			}
+		});
 		String.prototype.replaceAll = function(s1,s2) { 
 		    return this.replace(new RegExp(s1,"gm"),s2); 
 		}
@@ -560,6 +597,7 @@
 				}); */
 			});
 			function checkInput() {
+				var orgInfo = $('#org_type option:selected').val();
 				var name = $('#name').val();
 				//var course_abstract = $('#course_abstract').val();
 				var teacher = $('#teacher').val();
@@ -591,7 +629,7 @@
 					teacher_info == null || teacher_info == "" ||
 					crowd == null || crowd == "" ||
 					details == null || details == "" ||
-					course_date == null || course_date == "" ||
+					$('#course_date').val() == null || $('#course_date').val() == "" ||
 					course_img == null || course_img == "" ||
 					course_length == null || course_length == "" ||
 					teacher_img == null || teacher_img == "" ||
@@ -643,7 +681,8 @@
 							course_grade:course_grade,
 							course_price:course_price,
 							course_study_count:course_study_count,
-							live_class_id:live_class_id
+							live_class_id:live_class_id,
+							org_type:orgInfo
 						};
 						return data;
 				} else {
@@ -651,12 +690,10 @@
 				}
 			}
 			$('#submit_course').click(function() {
-				/* $('#helpModal').modal();
-				$('.progress.progress-striped').show(); */
+				$('.progress.progress-striped').show();
 				var data = checkInput();
 				if(data != null) {
 					$("#submit_course").attr('disabled', "");
-					$("#progress_tip").show();
 					var formData = data;
 					var xhr = new XMLHttpRequest();
 					var fd = new FormData();
@@ -725,6 +762,8 @@
 					xhr.addEventListener("abort", null, false);
 					xhr.open("POST", "/course/addCourse");
 					xhr.send(fd);
+				} else {
+					$('.progress.progress-striped').hide();
 				}
 			})
 		</script>

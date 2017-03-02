@@ -2,7 +2,7 @@ package com.ddcb.model;
 
 import java.sql.Timestamp;
 
-public class CourseModel {
+public class CourseWithOrgModel {
 
 	private Long id;
 	private String name;
@@ -19,17 +19,27 @@ public class CourseModel {
 	private String courseIndustry;
 	private String courseCompetency;
 	private String courseGrade;
-	private Long parentId;
 	private String price;
-	private int study_people_count; 
-		
-	public CourseModel(){}
+	private Integer people_count;
+	private Integer study_people_count;
+	private Integer hasCollection;
+	private Long parentId;
 	
-	public CourseModel(Long id, String name, String course_abstract, String teacher, String image,
+	private Integer select_status;
+	private Integer pay_status;
+	private Integer forward_status;
+	
+	private String org_name;
+	private Long org_id;
+		
+	public CourseWithOrgModel(){}
+	
+	public CourseWithOrgModel(Long id, String name, String course_abstract, String teacher, String image,
 			Timestamp course_date, String course_date_readable, String course_time, 
 			String course_length, Timestamp create_time, Integer courseType,
-			String courseField, String courseIndustry, String courseCompetency,
-			Long parentId, String courseGrade, String price, int study_people_count) {
+			String courseField, String courseIndustry, String courseCompetency, 
+			String price, Integer people_count, Integer study_people_count, Integer hasCollection,
+			Long parentId, String courseGrade, String org_name, Long org_id) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -45,10 +55,22 @@ public class CourseModel {
 		this.courseField = courseField;
 		this.courseIndustry = courseIndustry;
 		this.courseCompetency = courseCompetency;
+		this.price = price;
+		this.people_count = people_count;
+		this.study_people_count = study_people_count;
+		this.hasCollection = hasCollection;
 		this.parentId = parentId;
 		this.courseGrade = courseGrade;
-		this.price = price;
-		this.study_people_count = study_people_count;
+		this.org_name = org_name;
+		this.org_id = org_id;
+	}
+
+	public Integer getHasCollection() {
+		return hasCollection;
+	}
+
+	public void setHasCollection(Integer hasCollection) {
+		this.hasCollection = hasCollection;
 	}
 
 	public Long getId() {
@@ -131,6 +153,30 @@ public class CourseModel {
 		this.create_time = create_time;
 	}
 
+	public Integer getSelect_status() {
+		return select_status;
+	}
+
+	public void setSelect_status(Integer select_status) {
+		this.select_status = select_status;
+	}
+
+	public Integer getPay_status() {
+		return pay_status;
+	}
+
+	public void setPay_status(Integer pay_status) {
+		this.pay_status = pay_status;
+	}
+
+	public Integer getForward_status() {
+		return forward_status;
+	}
+
+	public void setForward_status(Integer forward_status) {
+		this.forward_status = forward_status;
+	}
+
 	public Integer getCourseType() {
 		return courseType;
 	}
@@ -163,6 +209,30 @@ public class CourseModel {
 		this.courseCompetency = courseCompetency;
 	}
 
+	public String getPrice() {
+		return price;
+	}
+
+	public void setPrice(String price) {
+		this.price = price;
+	}
+
+	public Integer getPeople_count() {
+		return people_count;
+	}
+
+	public void setPeople_count(Integer people_count) {
+		this.people_count = people_count;
+	}
+
+	public Integer getStudy_people_count() {
+		return study_people_count;
+	}
+
+	public void setStudy_people_count(Integer study_people_count) {
+		this.study_people_count = study_people_count;
+	}
+
 	public Long getParentId() {
 		return parentId;
 	}
@@ -179,30 +249,32 @@ public class CourseModel {
 		this.courseGrade = courseGrade;
 	}
 
-	public String getPrice() {
-		return price;
+	public String getOrg_name() {
+		return org_name;
 	}
 
-	public void setPrice(String price) {
-		this.price = price;
+	public void setOrg_name(String org_name) {
+		this.org_name = org_name;
 	}
 
-	public int getStudy_people_count() {
-		return study_people_count;
+	public Long getOrg_id() {
+		return org_id;
 	}
 
-	public void setStudy_people_count(int study_people_count) {
-		this.study_people_count = study_people_count;
+	public void setOrg_id(Long org_id) {
+		this.org_id = org_id;
 	}
 
 	@Override
 	public String toString() {
-		return "CourseModel [id=" + id + ", name=" + name + ", course_abstract=" + course_abstract + ", teacher="
+		return "CourseWithOrgModel [id=" + id + ", name=" + name + ", course_abstract=" + course_abstract + ", teacher="
 				+ teacher + ", image=" + image + ", course_date=" + course_date + ", course_date_readable="
 				+ course_date_readable + ", course_time=" + course_time + ", course_length=" + course_length
 				+ ", create_time=" + create_time + ", courseType=" + courseType + ", courseField=" + courseField
 				+ ", courseIndustry=" + courseIndustry + ", courseCompetency=" + courseCompetency + ", courseGrade="
-				+ courseGrade + ", parentId=" + parentId + ", price=" + price + ", study_people_count="
-				+ study_people_count + "]";
+				+ courseGrade + ", price=" + price + ", people_count=" + people_count + ", study_people_count="
+				+ study_people_count + ", hasCollection=" + hasCollection + ", parentId=" + parentId
+				+ ", select_status=" + select_status + ", pay_status=" + pay_status + ", forward_status="
+				+ forward_status + ", org_name=" + org_name + ", org_id=" + org_id + "]";
 	}
 }

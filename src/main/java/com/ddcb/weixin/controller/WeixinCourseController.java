@@ -25,6 +25,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.ddcb.dao.IClickLikeDao;
 import com.ddcb.dao.ICourseDao;
 import com.ddcb.dao.ICourseDetailDao;
+import com.ddcb.dao.IOrgCourseDao;
+import com.ddcb.dao.IOrgDao;
 import com.ddcb.dao.IQuestionDao;
 import com.ddcb.dao.IUserCollectionDao;
 import com.ddcb.dao.IUserCourseDao;
@@ -34,8 +36,10 @@ import com.ddcb.dao.IUserStudyRecordDao;
 import com.ddcb.model.ClickLikeModel;
 import com.ddcb.model.CourseDetailModel;
 import com.ddcb.model.CourseModel;
+import com.ddcb.model.CourseWithOrgModel;
 import com.ddcb.model.LiveClassApplyModel;
 import com.ddcb.model.LiveCourseModel;
+import com.ddcb.model.OrgModel;
 import com.ddcb.model.QuestionModel;
 import com.ddcb.model.UserCollectionModel;
 import com.ddcb.model.UserCourseModel;
@@ -73,6 +77,12 @@ public class WeixinCourseController {
 	private ICourseDetailDao courseDetailDao;
 	
 	@Autowired
+	private IOrgDao orgDao;
+	
+	@Autowired
+	private IOrgCourseDao orgCourseDao;
+	
+	@Autowired
 	private IClickLikeDao clickLikeDao;
 	
 	@RequestMapping("/course/getAllCourse")
@@ -80,6 +90,50 @@ public class WeixinCourseController {
 	public List<CourseModel> getAllCourse(HttpServletRequest request) {
 		List<CourseModel> courseList = courseDao.getAllCourse();
 		return courseList;
+	}
+	
+	@RequestMapping("/course/getAllCourseWithOrg")
+	@ResponseBody
+	public List<CourseWithOrgModel> getAllCourseWithOrg(HttpServletRequest request) {
+		List<CourseWithOrgModel> courseList = courseDao.getAllCourseWithOrg();
+		return courseList;
+	}
+	
+	@RequestMapping("/course/getAllOrgInfo")
+	@ResponseBody
+	public List<OrgModel> getAllOrgInfo(HttpServletRequest request) {
+		List<OrgModel> orgList = orgDao.getAllOrg();
+		return orgList;
+	}
+	
+	@RequestMapping("/course/addCourseOrgInfo")
+	@ResponseBody
+	public Map<String, String> addCourseOrgInfo(HttpServletRequest request) {
+		Map<String, String> retMap = new HashMap<>();
+		String list = request.getParameter("list");
+		String[] listStr = list.split(";");
+		for(String item : listStr) {
+			String[] itm = item.split(":");
+			String courseId = itm[0];
+			String orgId = itm[1];
+			Long course_id = null;
+			Long org_id = null;
+			try {
+				course_id = Long.valueOf(courseId);
+				org_id = Long.valueOf(orgId);
+				if(course_id != null && org_id != null) {
+					if(org_id != -1) {
+						orgCourseDao.deleteOrgCourse(course_id);
+						orgCourseDao.addOrgCourse(org_id, course_id);
+					} else {
+						orgCourseDao.deleteOrgCourse(course_id);
+					}
+				}
+			} catch (NumberFormatException nfe) {
+				logger.debug(nfe.toString());
+			}
+		}
+		return retMap;
 	}
 	
 	@RequestMapping("/course/getAllLiveClassApply")
@@ -123,25 +177,23 @@ public class WeixinCourseController {
 	
 	@RequestMapping("/course/getAllFinishedLiveCourseByPage")
 	@ResponseBody
-	public List<LiveCourseModel> getAllFinishedLiveCourseByPage(HttpSession httpSession, HttpServletRequest request) {
-		String userId = (String)httpSession.getAttribute("openid");
+	public List<CourseModel> getAllFinishedLiveCourseByPage(HttpSession httpSession, HttpServletRequest request) {
 		String page = request.getParameter("page");
 		String count = request.getParameter("count");
 		int page_ = Integer.valueOf(page);
 		int count_ = Integer.valueOf(count);
-		List<LiveCourseModel> courseList = courseDao.getAllFinishedLiveCourse(page_, count_, userId);
+		List<CourseModel> courseList = courseDao.getAllFinishedLiveCourseForMXXC(page_, count_);
 		return courseList;
 	}
 	
 	@RequestMapping("/course/getAllGoingLiveCourseByPage")
 	@ResponseBody
-	public List<LiveCourseModel> getAllGoingLiveCourseByPage(HttpSession httpSession, HttpServletRequest request) {
-		String userId = (String)httpSession.getAttribute("openid");
+	public List<CourseModel> getAllGoingLiveCourseByPage(HttpSession httpSession, HttpServletRequest request) {
 		String page = request.getParameter("page");
 		String count = request.getParameter("count");
 		int page_ = Integer.valueOf(page);
 		int count_ = Integer.valueOf(count);
-		List<LiveCourseModel> courseList = courseDao.getAllLiveCourse(page_, count_, userId);
+		List<CourseModel> courseList = courseDao.getAllLiveCourseForMXXC(page_, count_);
 		return courseList;
 	}
 	
@@ -540,7 +592,7 @@ public class WeixinCourseController {
 	@RequestMapping("/getAllCourseQuestions")
 	@ResponseBody
 	public List<QuestionModel> getAllCourseQuestions(HttpSession httpSession, HttpServletRequest request) {
-		String userId = (String)httpSession.getAttribute("openid");
+		String userId = (String) request.getSession().getAttribute("WEIXIN_REG_USER_ID");
 		String courseId = request.getParameter("course_id");
 		String page = request.getParameter("page");
 		String count = request.getParameter("count");
@@ -561,18 +613,22 @@ public class WeixinCourseController {
 	public Map<String, String> userPublishQuestion(HttpSession httpSession, HttpServletRequest request) {
 		Map<String, String> retMap = new HashMap<>();
 		String courseId = request.getParameter("course_id");
-		String userId = (String)httpSession.getAttribute("openid");
+		String userId = (String)httpSession.getAttribute("WEIXIN_REG_USER_ID");
 		String question = request.getParameter("question");
+		if(userId == null || userId.isEmpty()) {
+			retMap.put("error_code", "2");
+			retMap.put("error_msg", "你还没有登录，请先登录！");
+			return retMap;
+		}
 		long pId = -1;
 		boolean addSuccess = false;
 		try {
 			long courseId_ = Long.valueOf(courseId);
 			QuestionModel qm = new QuestionModel();
-			qm.setClick_like(0);
 			qm.setCourse_id(courseId_);
 			qm.setCreate_time(new Timestamp(System.currentTimeMillis()));
 			qm.setQuestion(question);
-			qm.setOpen_id(userId);
+			qm.setUser_id(userId);
 			pId = questionDao.addQuestion(qm);
 			addSuccess = pId != -1;
 		} catch(Exception ex) {
@@ -592,7 +648,13 @@ public class WeixinCourseController {
 	@ResponseBody
 	public Map<String, String> userClickLikeQuestion(HttpSession httpSession, HttpServletRequest request) {
 		String questionId = request.getParameter("id");
-		String userId = (String)httpSession.getAttribute("openid");
+		String userId = (String)httpSession.getAttribute("WEIXIN_REG_USER_ID");
+		if(userId == null || userId.isEmpty()) {
+			Map<String, String> retMap = new HashMap<>();
+			retMap.put("error_code", "2");
+			retMap.put("error_msg", "你还没有登录，请先登录！");
+			return retMap;
+		}
 		String like = request.getParameter("like");
 		try {
 			long questionId_ = Long.valueOf(questionId);

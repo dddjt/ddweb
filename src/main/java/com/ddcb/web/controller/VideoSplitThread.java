@@ -95,15 +95,15 @@ public class VideoSplitThread implements Runnable {
 					String durationTime = (hour<=9?"0"+hour:hour) + ":" + (min<=9?"0"+min:min) + ":" + (s<=9?"0"+s:s);
 					String videoName = "";
 					List<String> command = new ArrayList<>();
-					command.add("/home/ffmpeg/./ffmpeg");
+					command.add("ffmpeg");
 					command.add("-ss");
 					command.add(startTime);
 					command.add("-i");
-					command.add("/home/files/videos/" + videoFileName);
+					command.add("/data/files/vidoes/" + videoFileName);
 					command.add("-t");
 					command.add(durationTime);
 					videoName = getUniqueIdentifier() + ".mp4";
-					command.add("/home/files/videos/" + videoName);
+					command.add(" -vcodec copy -acodec copy /data/files/vidoes/" + videoName);
 					ProcessBuilder pb = new ProcessBuilder(command);
 					pb.redirectOutput(Redirect.INHERIT);
 					pb.redirectError(Redirect.INHERIT);
@@ -115,10 +115,10 @@ public class VideoSplitThread implements Runnable {
 					courseDetailDao.addCourseDetail(cdmList.get(index));
 					uploadFile(videoName);
 					index++;
-					File file = new File("/home/files/videos/" + videoName);
+					/*File file = new File("/data/files/vidoes/" + videoName);
 					if (file.exists() && file.isFile()) {
 						file.delete();
-					}
+					}*/
 				} catch (ParseException e) {
 					logger.error(e.toString());
 				} catch (IOException e) {
@@ -127,10 +127,11 @@ public class VideoSplitThread implements Runnable {
 					logger.error(e.toString());
 				}
 			}
-			File file = new File("/home/files/videos/" + videoFileName);
+			/*File file = new File("/data/files/vidoes/" + videoFileName);
 			if (file.exists() && file.isFile()) {
 				file.delete();
-			}
+			}*/
+			
 		}
 	}
 
@@ -144,7 +145,7 @@ public class VideoSplitThread implements Runnable {
 	private void uploadFile(String fileName) {
 		Auth auth = Auth.create("0R6T7IB2SlM1aIXXWT8dxYDIOY1aVhUd_tE4ItvQ", "8FIkA5vxhuRfXR6KgDqC2YEstMXtLPmy-2XT9TOT");
 		String token = auth.uploadToken("diandou");
-		File file = new File("/home/files/videos/" + fileName);
+		File file = new File("/data/files/vidoes/" + fileName);
 		UploadManager uploadManager = new UploadManager();
 		try {
 			uploadManager.put(file, fileName, token);

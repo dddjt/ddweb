@@ -33,7 +33,7 @@ public class ClickLikeDaoImpl implements IClickLikeDao {
 	@Override
 	public boolean addClickLike(ClickLikeModel clm) {
 		try{
-			String sql= "insert into user_click_like(question_id, open_id, click_like, create_time) values (?,?,?,?)";
+			String sql= "insert into user_click_like(question_id, user_id, click_like, create_time) values (?,?,?,?)";
 			int num = jdbcTemplate.update(sql, clm.getQuestion_id(), clm.getOpen_id(),
 					clm.getClick_like(), clm.getCreate_time());
 			return num > 0;
@@ -45,7 +45,7 @@ public class ClickLikeDaoImpl implements IClickLikeDao {
 	
 	@Override
 	public ClickLikeModel getClickLike(long questionId, String openId) {
-		String sql = "select * from user_click_like where question_id=? and open_id=?";
+		String sql = "select * from user_click_like where question_id=? and user_id=?";
 		ClickLikeModel clickLikeModel = null;
 		try {
 			clickLikeModel = jdbcTemplate.queryForObject(sql,
@@ -58,7 +58,7 @@ public class ClickLikeDaoImpl implements IClickLikeDao {
 
 	@Override
 	public boolean updateClickLike(long questionId, String openId, int clickLike) {
-		String sql = "update user_click_like set clickLike=? where question_id=? and open_id=?";
+		String sql = "update user_click_like set clickLike=? where question_id=? and user_id=?";
 		int affectedRows = 0;
 		try {
 			affectedRows = jdbcTemplate.update(sql, clickLike, questionId, openId);

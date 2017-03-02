@@ -39,7 +39,7 @@ public class QuestionDaoImpl implements IQuestionDao {
 		List<QuestionModel> list = null;
 		int beginIndex = page == 1? 0:(page - 1) * countPerPage;
 		try {
-			String sql = "select c.click_like as current_click_like, a.*, b.user_nickname, b.headimgurl, DATE_FORMAT(a.create_time,'%Y-%m-%d %T') as create_time_readable from user_question as a left join user_openid as b on a.open_id=b.open_id left join user_click_like as c on c.open_id=? and c.question_id=a.id where a.course_id=? order by a.click_like desc limit ?,?";
+			String sql = "select c.click_like as current_click_like, a.*, b.user_name, DATE_FORMAT(a.create_time,'%Y-%m-%d %T') as create_time_readable from user_question as a left join weixin_user as b on a.user_id=b.user_phone left join user_click_like as c on c.user_id=? and c.question_id=a.id where a.course_id=? order by a.click_like desc limit ?,?";
 			list = jdbcTemplate.query(sql, new Object[]{openId, courseId, beginIndex, countPerPage}, new RowMapperResultSetExtractor<QuestionModel>(
 							new QuestionMapper()));
 		} catch (Exception e) {
@@ -53,7 +53,7 @@ public class QuestionDaoImpl implements IQuestionDao {
 		List<QuestionModel> list = null;
 		int beginIndex = page == 1? 0:(page - 1) * countPerPage;
 		try {
-			String sql = "select 0 as current_click_like, a.*, b.user_nickname, b.headimgurl, DATE_FORMAT(a.create_time,'%Y-%m-%d %T') as create_time_readable from user_question as a left join user_openid as b on a.open_id=b.open_id where a.course_id=? order by a.click_like desc limit ?,?";
+			String sql = "select 0 as current_click_like, a.*, b.user_nickname, b.headimgurl, DATE_FORMAT(a.create_time,'%Y-%m-%d %T') as create_time_readable from user_question as a left join weixin_user as b on a.user_id=b.user_phone where a.course_id=? order by a.click_like desc limit ?,?";
 			list = jdbcTemplate.query(sql, new Object[]{courseId, beginIndex, countPerPage}, new RowMapperResultSetExtractor<QuestionModel>(
 							new QuestionMapper()));
 		} catch (Exception e) {
@@ -69,10 +69,10 @@ public class QuestionDaoImpl implements IQuestionDao {
 			jdbcTemplate.update(new PreparedStatementCreator() {
 				public PreparedStatement createPreparedStatement(
 						Connection connection) throws SQLException {
-					String sql = "insert into user_question(open_id, question, course_id, create_time) values (?,?,?,?)";
+					String sql = "insert into user_question(user_id, question, course_id, create_time) values (?,?,?,?)";
 					PreparedStatement ps = connection.prepareStatement(sql,
 							Statement.RETURN_GENERATED_KEYS);
-					ps.setString(1, qm.getOpen_id());
+					ps.setString(1, qm.getUser_id());
 					ps.setString(2, qm.getQuestion());
 					ps.setLong(3, qm.getCourse_id());
 					ps.setTimestamp(4, qm.getCreate_time());

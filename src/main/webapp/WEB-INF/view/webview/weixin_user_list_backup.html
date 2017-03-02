@@ -89,11 +89,11 @@
 							<i class="fa fa-book"></i><span class="link-title">&nbsp;课程列表</span>
 						</a>
 					</li>
-					<!-- <li class="">
+					<li class="">
 						<a href="open_class_banner.html">
 							<i class="fa fa-align-justify"></i><span class="link-title">&nbsp;公开课Banner</span>
 						</a>
-					</li> -->
+					</li>
 					<!-- <li class="">
 						<a href="live_class_share.html">
 							<i class="fa fa-share-alt"></i><span class="link-title">&nbsp;直播课程分享链接</span>
@@ -159,13 +159,13 @@
 			                    <table id="dataTable" style="white-space:normal;" class="table table-bordered table-condensed table-hover table-striped">
 			                      <thead>
 			                        <tr>
-			                          <th nowrap="nowrap">电话</th>
-			                          <th nowrap="nowrap">姓名</th>
-			                          <th nowrap="nowrap">学校</th>
-			                          <th nowrap="nowrap">专业</th>
-			                          <th nowrap="nowrap">年级</th>
-			                          <th nowrap="nowrap">意向国家</th>
-			                          <th nowrap="nowrap">注册时间</th>
+			                          <th nowrap="nowrap">用户头像</th>
+			                          <th nowrap="nowrap">用户OpenID</th>
+			                          <th nowrap="nowrap">用户昵称</th>
+			                          <th nowrap="nowrap">用户性别</th>
+			                          <th nowrap="nowrap">省份</th>
+			                          <th nowrap="nowrap">城市</th>
+			                          <th nowrap="nowrap">VIP状态</th>
 			                        </tr>
 			                      </thead>
 			                      <tbody id="data_detail">
@@ -228,13 +228,41 @@
 			function createDataList(data) {
 				var detailNode = document.getElementById('data_detail');
 				for (var i in data) {
+					var user_sex = data[i].user_sex;
+					var vip = data[i].user_type;
+					if(vip == "1") {
+						vip = "月会员";
+					} else if(vip == "2") {
+						vip = "季会员";
+					} else if(vip == "3"){
+						vip = "年会员";
+					}
+					if(user_sex == 1) {
+						user_sex = "男";
+					}else if(user_sex == 2){
+						user_sex = "女";
+					}else {
+						user_sex = "未知";
+					}
+					var vip_status = "";
+					if(data[i].pay_status != "1") {
+						vip_status = "非VIP会员";
+					} else {
+						var currentTime = new Date().getTime();
+						var expTime = new Date(data[i].expiration_time).getTime();
+						if(currentTime <= expTime) {
+							vip_status = "VIP会员/" + vip + "/到期时间" + new Date(parseInt(data[i].expiration_time)).toLocaleString().replace(/年|月/g, "-").replace(/日/g, " ");
+						} else {
+							vip_status = "超期会员/" + vip + "/到期时间" + new Date(parseInt(data[i].expiration_time)).toLocaleString().replace(/年|月/g, "-").replace(/日/g, " ");
+						}
+					}
 					var thNode = document.createElement('tr');
-					thNode.innerHTML = "<td nowrap='nowrap'>"+data[i].user_phone+"</td><td nowrap='nowrap'>"+data[i].user_name+"</td><td nowrap='nowrap'>"+data[i].school+"</td><td nowrap='nowrap'>"+data[i].major+"</td><td nowrap='nowrap'>"+data[i].grade+"</td><td nowrap='nowrap'>"+data[i].country+"</td><td nowrap='nowrap'>"+data[i].create_time+"</td>";
+					thNode.innerHTML = "<td nowrap='nowrap'><img src='"+data[i].headimgurl+"' style='width:60px;height:60px;'></td><td nowrap='nowrap'>"+data[i].open_id+"</td><td nowrap='nowrap'>"+data[i].user_nickname+"</td><td nowrap='nowrap'>"+user_sex+"</td><td nowrap='nowrap'>"+data[i].user_province+"</td><td>"+data[i].user_city+"</td><td>"+vip_status+"</td>";
 					detailNode.appendChild(thNode);
 				}
 			}
 			$.ajax({
-				url: '/weixin/getAllWeixinRegUserInfo',
+				url: '/weixin/getAllWeixinUserInfo',
 				type: "POST",
 				data: {},
 				success: function(data) {

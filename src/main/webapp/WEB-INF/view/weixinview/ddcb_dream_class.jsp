@@ -24,7 +24,7 @@ result = WeixinTools.getSign("http://www.diandou.me/weixin/weixinLogin?view=ddcb
 <meta charset="utf-8">
 <meta name="viewport"
 	content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
-<title>点都大讲堂</title>
+<title>梦想星辰</title>
 <link href="/css/weixincss/mui.min.css" rel="stylesheet" />
 <link href="/css/weixincss/mui.picker.min.css" rel="stylesheet" />
 <link href="/css/weixincss/mui.poppicker.css" rel="stylesheet" />
@@ -196,7 +196,7 @@ div.screening>ul>li {
 </head>
 <body>
 	<header class="mui-bar mui-bar-nav" style="background-color: #66d6a6;z-index:999999999;">
-		<h1 class="mui-title" style="color: white;">梦想笔记</h1>
+		<h1 class="mui-title" style="color: white;">梦想星辰</h1>
 		<a id="searchButton" href="#searchInput"
 			style="color: white; font-size: 25px; font-weight: 600;"
 			class="mui-icon mui-icon-search mui-pull-right"></a>

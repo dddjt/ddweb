@@ -4,7 +4,7 @@
 	<head>
 		<meta charset="UTF-8">
 
-		<title>点豆成兵</title>
+		<title>梦想星辰</title>
 
 		<!--IE Compatibility modes-->
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -64,7 +64,7 @@
 							<img class="media-object img-thumbnail user-img" style="width:64px;height:64px;" alt="User Picture" src="../../img/webimg/qrcode.jpg">
 						</a>
 						<div class="media-body">
-							<h5 class="media-heading">欢迎登录点豆成兵</h5>
+							<h5 class="media-heading">欢迎登录梦想星辰</h5>
 							<ul class="list-unstyled user-info">
 								<li>Administrator</li>
 								<li>最近一次访问 :
@@ -89,12 +89,12 @@
 							<i class="fa fa-book"></i><span class="link-title">&nbsp;课程列表</span>
 						</a>
 					</li>
-					<li class="">
+					<!-- <li class="">
 						<a href="open_class_banner.html">
 							<i class="fa fa-align-justify"></i><span class="link-title">&nbsp;公开课Banner</span>
 						</a>
-					</li>
-					<li class="">
+					</li> -->
+					<!-- <li class="">
 						<a href="live_class_share.html">
 							<i class="fa fa-share-alt"></i><span class="link-title">&nbsp;直播课程分享链接</span>
 						</a>
@@ -120,18 +120,18 @@
 							<i class="fa fa-legal"></i><span class="link-title">&nbsp;视频广告</span>
 						</a>
 					</li>
-					<li class="nav-divider"></li>
+					<li class="nav-divider"></li> -->
 					<li class="">
 						<a href="weixin_user_list.html">
-							<i class="fa fa-user"></i><span class="link-title">&nbsp;微信用户列表</span>
+							<i class="fa fa-user"></i><span class="link-title">&nbsp;注册用户列表</span>
 						</a>
 					</li>
-					<li class="nav-divider"></li>
+					<!-- <li class="nav-divider"></li>
 					<li class="">
 						<a href="live_class_statistic.html">
 							<i class="fa fa-align-left"></i><span class="link-title">&nbsp;直播课程统计信息</span>
 						</a>
-					</li>
+					</li> -->
 					<li class="nav-divider"></li>
 					<li>
 						<a href="/web/webUserLogout">
@@ -165,6 +165,7 @@
 			                          <th nowrap="nowrap">导师摘要</th>
 			                          <th nowrap="nowrap">上课时间</th>
 			                          <th nowrap="nowrap">课程时长(分钟)</th>
+			                          <!-- <th nowrap="nowrap">所属机构</th> -->
 			                        </tr>
 			                      </thead>
 			                      <tbody id="data_detail">
@@ -209,6 +210,7 @@
 		<!-- Metis demo scripts -->
 		<script src="../../js/webjs/app.js"></script>
 		<script>
+			var optStr = "<option value='-1'>不属于任何机构</option>";
 			$('.outer').height($('#left').height() - 48 - 61 - 19);
 			$('.inner').height($('#left').height() - 48 - 61 - 20 - 20);
 			$(window).resize(function() {
@@ -230,6 +232,12 @@
 					var thNode = document.createElement('tr');
 					thNode.innerHTML = "<td nowrap='nowrap'>"+data[i].id+"</td><td nowrap='nowrap'>"+data[i].name+"</td><td>"+(data[i].courseType == "0" ? "公开课":"直播课")+"</td><td nowrap='nowrap'>"+data[i].teacher+"</td><td nowrap='nowrap'>"+data[i].course_date_readable+"</td><td>"+data[i].course_length+"</td>";
 					detailNode.appendChild(thNode);
+					if(data[i].org_name != null && data[i].org_name != "") {
+						var keyId = "#" + data[i].id;
+						var opt = " option[value='"+data[i].org_id+"']"
+						var pp = $(keyId + opt);
+						$(keyId + opt).attr("selected", true);
+					}
 				}
 			}
 			$.ajax({
@@ -243,6 +251,22 @@
 				},
 				error: function(status, error) {
 				}
+			});
+			$('#submit_course').click(function() {
+				var list = "";
+				$("select").each(function(){
+					list += $(this).attr("course_id") + ":" + $(this).children("option:selected").val() + ";";
+				})
+				$.ajax({
+					url: '/course/addCourseOrgInfo',
+					type: "POST",
+					data: {list:list},
+					success: function(data) {
+						
+					},
+					error: function(status, error) {
+					}
+				});
 			});
 		</script>
 	</body>

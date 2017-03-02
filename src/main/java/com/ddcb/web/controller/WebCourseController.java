@@ -41,6 +41,7 @@ import com.ddcb.dao.ICourseDao;
 import com.ddcb.dao.ICourseDetailDao;
 import com.ddcb.dao.ILiveClassShareDao;
 import com.ddcb.dao.ILiveClassStatisticsDao;
+import com.ddcb.dao.IOrgCourseDao;
 import com.ddcb.dao.IQuestionDao;
 import com.ddcb.model.BannerModel;
 import com.ddcb.model.CourseAdModel;
@@ -67,6 +68,9 @@ public class WebCourseController {
 	private ICourseDetailDao courseDetailDao;
 	
 	@Autowired
+	private IOrgCourseDao orgCourseDao;
+	
+	@Autowired
 	private ILiveClassShareDao liveClassShareDao;
 	
 	@Autowired
@@ -82,16 +86,8 @@ public class WebCourseController {
 	@ResponseBody
 	public Map<String, String> addCourse(@RequestParam MultipartFile[] files, HttpServletRequest request) {
 		Map<String, String> retMap = new HashMap<>();
-		String realPath = request.getSession().getServletContext().getRealPath("/WEB-INF");
-		logger.debug("realPath : {}", realPath);
-		// realPath = realPath.substring(0, realPath.indexOf("/", 1));
-		logger.debug("realPath : {}", realPath);
-		/*
-		 * String videoPath = realPath + "/files/videos"; String imgPath =
-		 * realPath + "/files/imgs";
-		 */
-		String videoPath = "/home/files/videos";
-		String imgPath = "/softs/files/imgs";
+		String videoPath = "/data/files/vidoes";
+		String imgPath = "/data/files/imgs";
 		String teacherImage = "";
 		String videoImage = "";
 		String videoSrc = "";
@@ -99,6 +95,7 @@ public class WebCourseController {
 		CourseModel cm = new CourseModel();
 		List<CourseDetailModel> cdmList = new ArrayList<>();
 		Map<String, String[]> params = request.getParameterMap();
+		String org = params.get("org_type")[0];
 		cm.setCourse_abstract("");
 		cm.setCourse_date(Timestamp.valueOf(params.get("course_date")[0]));
 		cm.setCourse_time("");
@@ -112,12 +109,12 @@ public class WebCourseController {
 		cm.setCourseCompetency(params.get("course_competency")[0]);
 		cm.setPrice(params.get("course_price")[0]);
 		cm.setCourseGrade(params.get("course_grade")[0]);
-		String courseStudyCount = params.get("course_study_count")[0];
+		//String courseStudyCount = params.get("course_study_count")[0];
 		String liveClassId = params.get("live_class_id")[0];
 		Integer courseStudyCount_ = 0;
 		Long liveClassClassId_ = 0L;
 		try {
-			courseStudyCount_ = Integer.valueOf(courseStudyCount);
+			courseStudyCount_ = Integer.valueOf(0);
 			liveClassClassId_ = Long.valueOf(liveClassId);
 		} catch(Exception ex) {
 			logger.error(ex.toString());
@@ -211,6 +208,15 @@ public class WebCourseController {
 			Thread thread = new Thread(vst);
 			thread.start();
 		}
+		Long orgId = null;
+		try {
+			orgId = Long.valueOf(org);
+			if(orgId != null) {
+				orgCourseDao.addOrgCourse(orgId, courseId);
+			}
+		} catch(NumberFormatException nfe) {
+			logger.debug(nfe.toString());
+		}
 		retMap.put("error_code", "0");
 		retMap.put("error_message", "");
 		return retMap;
@@ -224,7 +230,7 @@ public class WebCourseController {
 		logger.debug("realPath : {}", realPath);
 		realPath = realPath.substring(0, realPath.indexOf("/", 1));
 		logger.debug("realPath : {}", realPath);
-		String imgPath = realPath + "/files/bannerimgs";
+		String imgPath = "/data/files/bannerimgs";
 		int index = 1;
 		if (files.length != 0) {
 			for (MultipartFile file : files) {

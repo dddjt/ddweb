@@ -3,6 +3,7 @@ package com.ddcb.dao;
 import java.util.List;
 
 import com.ddcb.model.CourseModel;
+import com.ddcb.model.CourseWithOrgModel;
 import com.ddcb.model.LiveClassApplyModel;
 import com.ddcb.model.LiveCourseModel;
 import com.ddcb.model.LiveCourseShareModel;
@@ -18,9 +19,13 @@ public interface ICourseDao {
 	
 	public CourseModel getCourseByCourseId(long id);
 	
+	public CourseModel getCourseByParentId(long id);
+	
 	public long addCourse(CourseModel courseModel);
 	
 	public List<CourseModel> getAllCourse();
+	
+	public List<CourseWithOrgModel> getAllCourseWithOrg();
 	
 	public List<CourseModel> getAllLiveClass();
 	
@@ -32,7 +37,11 @@ public interface ICourseDao {
 		
 	public List<LiveCourseModel> getAllLiveCourse(int page, int count, String userId);
 	
+	public List<CourseModel> getAllLiveCourseForMXXC(int page, int count);
+	
 	public List<LiveCourseModel> getAllFinishedLiveCourse(int page, int count, String userId);
+	
+	public List<CourseModel> getAllFinishedLiveCourseForMXXC(int page, int count);
 	
 	public List<LiveCourseModel> getAllLiveCourseByCondition(int page, int count, String field, String industry, String competency, String userId);
 	

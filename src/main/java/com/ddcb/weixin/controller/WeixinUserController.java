@@ -34,12 +34,14 @@ import com.ddcb.dao.IUserCourseDao;
 import com.ddcb.dao.IUserDao;
 import com.ddcb.dao.IUserLiveCoursePayDao;
 import com.ddcb.dao.IUserOpenIdDao;
+import com.ddcb.dao.IWeixinRegUserDao;
 import com.ddcb.dao.IWeixinUserDao;
 import com.ddcb.dao.IWeixinUserLogDao;
 import com.ddcb.model.UserCourseModel;
 import com.ddcb.model.UserLiveCoursePayModel;
 import com.ddcb.model.UserModel;
 import com.ddcb.model.UserOpenIdModel;
+import com.ddcb.model.WeixinRegUserModel;
 import com.ddcb.model.WeixinUserModel;
 import com.ddcb.utils.UserPwdMD5Encrypt;
 import com.ddcb.utils.WeixinConstEnum;
@@ -70,6 +72,9 @@ public class WeixinUserController {
 	private IWeixinUserDao weixinUserDao;
 	
 	@Autowired
+	private IWeixinRegUserDao weixinRegUserDao;
+	
+	@Autowired
 	private IWeixinUserLogDao weixinUserLogDao;
 	
 	@RequestMapping("/weixin/weixinRegisterUser")
@@ -82,7 +87,7 @@ public class WeixinUserController {
 		String sessionCheckCode = (String)httpSession.getAttribute("check_code");
 		if(user_id == null || user_pwd == null || check_code == null) {
 			retMap.put("error_code", "1");
-			retMap.put("error_msg", "账号、密码或验证码有尚未填写的，请检查！");
+			retMap.put("error_msg", "账号、姓名、密码或验证码有尚未填写的，请检查！");
 			return retMap;
 		}
 		if(!check_code.equals(sessionCheckCode)) {
@@ -90,25 +95,61 @@ public class WeixinUserController {
 			retMap.put("error_msg", "您输入的验证码不正确，请检查！");
 			return retMap;
 		}
-		UserModel um = userDao.getUserByUserId(user_id);
-		if(um != null && um.getUser_id().equals(user_id)) {
+		WeixinRegUserModel um = weixinRegUserDao.getWeixinRegUserByUserId(user_id);
+		if(um != null && um.getUser_phone().equals(user_id)) {
 			retMap.put("error_code", "3");
 			retMap.put("error_msg", "当前手机号码已经注册过，请直接登陆！");
 			return retMap;
 		}
 		String encryptPwd = UserPwdMD5Encrypt.getPasswordByMD5Encrypt(user_pwd);
-		um = new UserModel();
-		um.setUser_id(user_id);
+		um = new WeixinRegUserModel();
 		um.setUser_pwd(encryptPwd);
-		um.setUser_type(1);
-		um.setCreate_time(new Timestamp(System.currentTimeMillis()));
-		userDao.addUser(um);
-		retMap.put("error_code", "0");
-		retMap.put("error_msg", "注册成功，请登录！");
+		um.setUser_phone(user_id);
+		if(weixinRegUserDao.addWeixinRegUser(um)) {
+			retMap.put("error_code", "0");
+			retMap.put("error_msg", "注册成功，请登录！");
+			httpSession.setAttribute("WEIXIN_REG_USER_ID", user_id);
+			
+		} else {
+			retMap.put("error_code", "4");
+			retMap.put("error_msg", "服务器暂时无法完成您提交的注册，请稍后重试！");
+		}
 		return retMap;
 	}
 	
-	/*@RequestMapping("/weixin/weixinLogin")
+	@RequestMapping("/weixin/weixinRegisterUserDetailInfo")
+	@ResponseBody
+	public Map<String, String> weixinRegisterUserDetailInfo(HttpSession httpSession, HttpServletRequest request) {
+		Map<String, String> retMap = new HashMap<>();
+		String user_id = (String) request.getSession().getAttribute("WEIXIN_REG_USER_ID");
+		String user_name = request.getParameter("user_name");
+		String school = request.getParameter("school");
+		String major = request.getParameter("major");
+		String grade = request.getParameter("grade");
+		String country = request.getParameter("country");
+		WeixinRegUserModel um = weixinRegUserDao.getWeixinRegUserByUserId(user_id);
+		if(um == null) {
+			retMap.put("error_code", "3");
+			retMap.put("error_msg", "当前会话已超时，请重新进入！");
+			return retMap;
+		}
+		um.setUser_name(user_name);
+		um.setCountry(country);
+		um.setGrade(grade);
+		um.setMajor(major);
+		um.setSchool(school);
+		if(weixinRegUserDao.addWeixinRegUserDetailInfo(um)) {
+			retMap.put("error_code", "0");
+			retMap.put("error_msg", "提交个人信息成功！");
+			
+		} else {
+			retMap.put("error_code", "4");
+			retMap.put("error_msg", "服务器暂时不可用，请稍后重试！");
+		}
+		return retMap;
+	}
+	
+	@RequestMapping("/weixin/weixinLogin")
 	@ResponseBody
 	public Map<String, String> weixinLogin(HttpSession httpSession, HttpServletRequest request) {
 		Map<String, String> retMap = new HashMap<>();
@@ -119,12 +160,12 @@ public class WeixinUserController {
 			retMap.put("error_msg", "账号或密码为空，请检查！");
 			return retMap;
 		}
-		UserModel um = userDao.getUserByUserId(user_id);
+		WeixinRegUserModel um = weixinRegUserDao.getWeixinRegUserByUserId(user_id);
 		if(um != null) {
 			if(UserPwdMD5Encrypt.getPasswordByMD5Encrypt(user_pwd).equals(um.getUser_pwd())) {
 				retMap.put("error_code", "0");
 				retMap.put("error_msg", "");
-				httpSession.setAttribute("user_id", user_id);
+				httpSession.setAttribute("WEIXIN_REG_USER_ID", user_id);
 				return retMap;
 			} else {
 				retMap.put("error_code", "2");
@@ -136,13 +177,13 @@ public class WeixinUserController {
 			retMap.put("error_msg", "您输入的手机号码还没有注册，请先注册！");
 			return retMap;
 		}
-	}*/
+	}
 	
 	@RequestMapping("/weixin/weixinLogout")
 	public String weixinLogout(HttpSession httpSession, HttpServletRequest request) {
-		httpSession.removeAttribute("user_id");
+		httpSession.removeAttribute("WEIXIN_REG_USER_ID");
 		httpSession.removeAttribute("courseid");
-		return "redirect:/view/weixinview/recent_class.html";
+		return "redirect:/getLiveClass";
 	}
 	
 	@RequestMapping("/weixin/weixinForgetPwd")
@@ -163,13 +204,13 @@ public class WeixinUserController {
 			retMap.put("error_msg", "您输入的验证码不正确，请检查！");
 			return retMap;
 		}
-		UserModel um = userDao.getUserByUserId(user_id);
+		WeixinRegUserModel um = weixinRegUserDao.getWeixinRegUserByUserId(user_id);
 		if(um == null) {
 			retMap.put("error_code", "3");
 			retMap.put("error_msg", "当前手机号码还没有注册过，请先注册！");
 			return retMap;
 		} else {
-			if(userDao.updateUserPwd(user_id, UserPwdMD5Encrypt.getPasswordByMD5Encrypt(user_pwd))) {
+			if(weixinRegUserDao.updateUserPwd(user_id, UserPwdMD5Encrypt.getPasswordByMD5Encrypt(user_pwd))) {
 				retMap.put("error_code", "0");
 				retMap.put("error_msg", "");
 				return retMap;
@@ -198,7 +239,7 @@ public class WeixinUserController {
 		return retMap;
 	}
 	
-	@RequestMapping("/weixin/weixinLogin")
+	/*@RequestMapping("/weixin/weixinLogin")
 	public String weixinAuthorizedLogin(HttpSession httpSession, HttpServletRequest request) {
 		String sessionOpenId = (String)httpSession.getAttribute("openid");
 		String code = request.getParameter("code");
@@ -249,7 +290,8 @@ public class WeixinUserController {
 			
 		}
 		return "view/weixinview/" + view;
-	}
+	}*/
+	
 	
 	@RequestMapping("/getWeixinLoginUserInfo")
 	@ResponseBody

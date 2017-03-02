@@ -93,21 +93,6 @@ mui.init({
 //启用右滑关闭功能
 });
 mui('.mui-scroll-wrapper').scroll();
-var countdown = 60;
-function setTime(val) {
-	if (countdown == 0) { 
-		val.removeAttribute("disabled");    
-		val.innerHTML = "获取验证码"; 
-		countdown = 60; 
-	} else { 
-		val.setAttribute("disabled", true); 
-		val.innerHTML = "重发送(" + countdown + ")"; 
-		countdown--;
-		setTimeout(function() {
-			setTime(val)
-		}, 1000);
-	}
-}
 function validatemobile(mobile) {
 	if (mobile.length == 0) {
 		return false;
@@ -124,81 +109,47 @@ function validatemobile(mobile) {
 }
 
 function register() {
-	var user_id = document.getElementById('user_id').value;
-	var user_pwd = document.getElementById('user_pwd').value;
-	var user_pwd_confirm = document.getElementById('user_pwd_confirm').value;
-	var check_code = document.getElementById('check_code').value;
-	if (user_id == null || user_id == "") {
-		mui.createTipDialog('请输入您的手机号码!', null).show();
+	var user_name = document.getElementById('user_name').value;
+	var school = document.getElementById('school').value;
+	var major = document.getElementById('major').value;
+	var grade = document.getElementById('grade').value;
+	var country = document.getElementById('country').value;
+	if (user_name == null || user_name == "") {
+		mui.createTipDialog('请输入您的姓名!', null).show();
 		return;
 	}
-	if(!validatemobile(user_id)) {
-		mui.createTipDialog('请输入有效的手机号码!', null).show();
+	if (school == null || school == "") {
+		mui.createTipDialog('请输入您的学校!', null).show();
 		return;
 	}
-	if (user_pwd == null || user_pwd == "") {
-		mui.createTipDialog('请输入密码!', null).show();
+	if (grade == null || grade == "") {
+		mui.createTipDialog('请输入您的年级!', null).show();
 		return;
 	}
-	if (user_pwd_confirm == null || user_pwd_confirm == "") {
-		mui.createTipDialog('请输入确认密码!', null).show();
+	if (major == null || major == "") {
+		mui.createTipDialog('请输入您的专业!', null).show();
 		return;
 	}
-	if (user_pwd != user_pwd_confirm) {
-		mui.createTipDialog('两次输入的密码不一致，请检查!', null).show();
-		return;
-	}
-	if (check_code == null || check_code == "") {
-		mui.createTipDialog('请输入验证码!', null).show();
+	if (country == null || country == "") {
+		mui.createTipDialog('请输入您的意向国家!', null).show();
 		return;
 	}
 	var mask = mui.createProcessingMask(null);
 	mask.show();
 	mui.ajax({
-		url : '/weixin/weixinRegisterUser',
+		url : '/weixin/weixinRegisterUserDetailInfo',
 		type : "POST",
 		data : {
-			user_id : user_id,
-			user_pwd : user_pwd,
-			check_code : check_code
+			user_name : user_name,
+			school:school,
+			major:major,
+			grade:grade,
+			country:country
 		},
 		success : function(data) {
 			mask.close();
 			if (data.error_code == "0") {
-				window.location = "/view/weixinview/register2.html";
-			} else {
-				mui.createTipDialog(data.error_msg, null).show();
-			}
-		},
-		error : function(status, error) {
-			mask.close();
-			mui.createTipDialog("服务器暂时无法响应您的请求，请稍后重试！", null).show();
-		}
-	});
-}
-
-function getCheckCode(btn) {
-	var user_id = document.getElementById('user_id').value;
-	if(user_id == null || user_id == "") {
-		mui.createTipDialog('请输入您的手机号码!', null).show();
-		return;
-	}
-	if(!validatemobile(user_id)) {
-		mui.createTipDialog('请输入有效的手机号码!', null).show();
-		return;
-	}
-	var mask = mui.createProcessingMask(null);
-	mask.show();
-	mui.ajax({
-		url : '/weixin/weixinGetCheckCode',
-		type : "POST",
-		data : {
-			user_id : user_id
-		},
-		success : function(data) {
-			mask.close();
-			if (data.error_code == "0") {
-				setTime(btn);
+				window.location = "/getLiveClass";
 			} else {
 				mui.createTipDialog(data.error_msg, null).show();
 			}

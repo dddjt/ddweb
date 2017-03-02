@@ -15,10 +15,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.ddcb.dao.IUserDao;
 import com.ddcb.dao.IUserOpenIdDao;
+import com.ddcb.dao.IWeixinRegUserDao;
 import com.ddcb.dao.IWeixinUserDao;
 import com.ddcb.model.UserModel;
 import com.ddcb.model.UserOpenIdDetailModel;
 import com.ddcb.model.UserOpenIdModel;
+import com.ddcb.model.WeixinRegUserModel;
 import com.ddcb.utils.UserPwdMD5Encrypt;
 import com.ddcb.utils.WeixinConstEnum;
 import com.ddcb.utils.WeixinTools;
@@ -33,6 +35,9 @@ public class WebUserController {
 	
 	@Autowired
 	private IUserOpenIdDao userOpenIdDao;
+	
+	@Autowired
+	private IWeixinRegUserDao weixinRegUserDao;
 
 	@RequestMapping("/web/webUserLogin")
 	@ResponseBody
@@ -89,5 +94,11 @@ public class WebUserController {
 	@ResponseBody
 	public List<UserOpenIdDetailModel> getAllWeixinUserInfo(HttpSession httpSession, HttpServletRequest request) {
 		return userOpenIdDao.getAllUser();
+	}
+	
+	@RequestMapping("/weixin/getAllWeixinRegUserInfo")
+	@ResponseBody
+	public List<WeixinRegUserModel> getAllWeixinRegUserInfo(HttpSession httpSession, HttpServletRequest request) {
+		return weixinRegUserDao.getAllWeixinRegUser();
 	}
 }

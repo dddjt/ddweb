@@ -3,14 +3,33 @@
 	import="org.springframework.web.context.support.WebApplicationContextUtils"%>
 <%@ page import="org.springframework.web.context.WebApplicationContext"%>
 <%@ page import="com.ddcb.dao.ICourseDao"%>
-<%@ page import="com.ddcb.model.CourseModel"%>
+<%@ page import="com.ddcb.dao.IUserCollectionDao"%>
+<%@ page import="com.ddcb.dao.IUserCourseDao"%>
+<%@ page import="com.ddcb.model.LiveCourseModel"%>
+<%@ page import="com.ddcb.model.UserCollectionModel"%>
+<%@ page import="com.ddcb.model.UserCourseModel"%>
+<%@ page import="com.ddcb.utils.WeixinTools"%>
+<%@ page import="com.ddcb.model.WeixinUserModel"%>
+<%@ page import="com.ddcb.dao.IWeixinUserDao"%>
 <%@ page import="java.util.*"%>
 <%
 	WebApplicationContext wac = WebApplicationContextUtils
 			.getRequiredWebApplicationContext(this.getServletContext());
 	ICourseDao courseDao = (ICourseDao) wac.getBean("courseDao");
-	List<CourseModel> finishedlist = courseDao.getAllFinishedLiveCourseForMXXC(1, 8);
-	List<CourseModel> list = courseDao.getAllLiveCourseForMXXC(1, 8);
+	IUserCourseDao userCourseDao = (IUserCourseDao) wac.getBean("userCourseDao");
+	String userId = (String) session.getAttribute("openid");
+	//userId = "os3bVs6Qiq2Bo1dbu36Tu9WkDEa8";
+	List<LiveCourseModel> finishedlist = courseDao.getAllFinishedLiveCourse(1, 8, userId);
+	List<LiveCourseModel> list = courseDao.getAllLiveCourse(1, 8, userId);
+	String code = (String) session.getAttribute("url_code");
+	Map<String, String> result = new HashMap<>();
+	result = WeixinTools.getSign(
+			"http://www.diandou.me/weixin/weixinLogin?view=ddcb_live_class&code=" + code + "&state=123");
+	IWeixinUserDao weixinUserDao = (IWeixinUserDao)wac.getBean("weixinUserDao");
+	WeixinUserModel wum = weixinUserDao.getWeixinUserByUserId(userId);
+	long currentTime = System.currentTimeMillis();
+	int userIsVip = 0;
+	if(wum != null && wum.getPay_status() == 1 && wum.getExpiration_time().getTime()>=currentTime) userIsVip = 1;
 %>
 <!DOCTYPE html>
 <html>
@@ -124,7 +143,7 @@
 								<div style="margin-top: 5px;">
 									<ul id="going_data_list" class="mui-table-view">
 										<%
-											for (CourseModel cm : list) {
+											for (LiveCourseModel cm : list) {
 										%>
 										<li class="mui-table-view-cell mui-media"
 											course_id="<%=cm.getId()%>">
@@ -146,6 +165,66 @@
 														<span style="font-size: 16px;"
 															class="mui-icon mui-icon-compose"></span>播放时间<%=cm.getCourse_date_readable()%></h6>
 												</div>
+											</div>
+											<div style="margin-top: 5px;">
+												<div style="float: left; height: 25px; line-height: 25px;">
+													<p style="font-size: 12px;">
+														课程售价：<%=cm.getPrice()%>元
+													</p>
+												</div>
+												<%
+												if(cm.getPrice() != null && !cm.getPrice().isEmpty() && !("0").equals(cm.getPrice())){
+													if (cm.getPay_status() != null && cm.getPay_status() == 1) {
+												%>
+												<div style="float: right;">
+													<button course_id="<%=cm.getId()%>"
+														style="height: 25px; line-height: 25px; padding: 0px 5px; font-size: 12px;"
+														disabled>已经购买</button>
+												</div>
+												<%
+													} else {
+												%>
+												<div style="float: right;">
+													<button class="buy_class" course_price="<%=cm.getPrice()%>"
+														course_id="<%=cm.getId()%>"
+														style="height: 25px; line-height: 25px; padding: 0px 5px; font-size: 12px;">购买课程</button>
+												</div>
+												<%
+													}
+												} else if(userIsVip != 1){
+												%>
+													<%if((cm.getScreenshot() == null || cm.getScreenshot().isEmpty()) && (cm.getDonate_pay_status() == null || cm.getDonate_pay_status() == 0)) { %>
+													<div style="float: right;">
+														<button onclick="uploadShareImage('<%=cm.getId()%>', this, event)" course_id="<%=cm.getId()%>"
+															style="height: 25px; line-height: 25px; padding: 0px 5px; font-size: 12px;">我要报名</button>
+													</div>
+													<%} else { %>
+													<div style="float: right;">
+														<button course_id="<%=cm.getId()%>"
+															style="height: 25px; line-height: 25px; padding: 0px 5px; font-size: 12px;"
+															disabled>已经报名</button>
+													</div>
+													<%} %>
+												
+												<%
+												}
+													if (("1").equals(cm.getHasCollection())) {
+												%>
+												<div style="float: right; margin-right: 5px;">
+													<button onclick="collectionClick('<%=cm.getId()%>', null)"
+														style="height: 25px; line-height: 25px; padding: 0px 5px; font-size: 12px;"
+														disabled>已经收藏</button>
+												</div>
+												<%
+													} else {
+												%>
+												<div style="float: right; margin-right: 5px;">
+													<button onclick="collectionClick('<%=cm.getId()%>', this)"
+														style="height: 25px; line-height: 25px; padding: 0px 5px; font-size: 12px;">收藏课程</button>
+												</div>
+												<%
+													}
+												%>
 											</div>
 										</li>
 										<%
@@ -178,7 +257,7 @@
 								<div style="margin-top: 5px;">
 									<ul id="finished_data_list" class="mui-table-view">
 										<%
-											for (CourseModel cm : finishedlist) {
+											for (LiveCourseModel cm : finishedlist) {
 										%>
 										<li class="mui-table-view-cell mui-media"
 											course_id="<%=cm.getId()%>">
@@ -200,6 +279,66 @@
 														<span style="font-size: 16px;"
 															class="mui-icon mui-icon-compose"></span>播放时间<%=cm.getCourse_date_readable()%></h6>
 												</div>
+											</div>
+											<div style="margin-top: 5px;">
+												<div style="float: left; height: 25px; line-height: 25px;">
+													<p style="font-size: 12px;">
+														课程售价：<%=cm.getPrice()%>元
+													</p>
+												</div>
+												<%
+												if(cm.getPrice() != null && !cm.getPrice().isEmpty() && !("0").equals(cm.getPrice())){
+													if (cm.getPay_status() != null && cm.getPay_status() == 1) {
+												%>
+												<div style="float: right;">
+													<button course_id="<%=cm.getId()%>"
+														style="height: 25px; line-height: 25px; padding: 0px 5px; font-size: 12px;"
+														disabled>已经购买</button>
+												</div>
+												<%
+													} else {
+												%>
+												<div style="float: right;">
+													<button class="buy_class" course_price="<%=cm.getPrice()%>"
+														course_id="<%=cm.getId()%>"
+														style="height: 25px; line-height: 25px; padding: 0px 5px; font-size: 12px;" disabled>购买课程</button>
+												</div>
+												<%
+													}
+												} else if(userIsVip != 1){
+												%>
+													<%if((cm.getScreenshot() == null || cm.getScreenshot().isEmpty()) && (cm.getDonate_pay_status() == null || cm.getDonate_pay_status() == 0)) { %>
+													<div style="float: right;">
+														<button onclick="uploadShareImage('<%=cm.getId()%>', this, event)" course_id="<%=cm.getId()%>"
+															style="height: 25px; line-height: 25px; padding: 0px 5px; font-size: 12px;" disabled>我要报名</button>
+													</div>
+													<%} else { %>
+													<div style="float: right;">
+														<button course_id="<%=cm.getId()%>"
+															style="height: 25px; line-height: 25px; padding: 0px 5px; font-size: 12px;"
+															disabled>已经报名</button>
+													</div>
+													<%} %>
+												
+												<%
+												}
+													if (("1").equals(cm.getHasCollection())) {
+												%>
+												<div style="float: right; margin-right: 5px;">
+													<button onclick="collectionClick('<%=cm.getId()%>', null)"
+														style="height: 25px; line-height: 25px; padding: 0px 5px; font-size: 12px;"
+														disabled>已经收藏</button>
+												</div>
+												<%
+													} else {
+												%>
+												<div style="float: right; margin-right: 5px;">
+													<button onclick="collectionClick('<%=cm.getId()%>', this)"
+														style="height: 25px; line-height: 25px; padding: 0px 5px; font-size: 12px;">收藏课程</button>
+												</div>
+												<%
+													}
+												%>
 											</div>
 										</li>
 										<%
@@ -251,8 +390,21 @@
 <script type="text/javascript" src="/js/weixinjs/mui.min.js"></script>
 <script src="/js/weixinjs/mui.pullToRefresh.js"></script>
 <script src="/js/weixinjs/mui.pullToRefresh.material.js"></script>
+<script src="https://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
 <script src="/js/weixinjs/fastclick.js"></script>
 <script type="text/javascript" charset="utf-8">
+window.addEventListener( "load", function() {
+	FastClick.attach( document.body );
+}, false );
+var imgUrl = "http://www.diandou.me/img/weixinimg/share_img.jpg";
+var lineLink = window.location.href;
+var descContent = "点豆大讲堂---为进取心而生，专注职场“传、帮、带”";
+var shareTitle = "点豆大讲堂";
+<%if (list != null && list.size() != 0) {%>
+	imgUrl = "http://www.diandou.me/files/imgs/<%=list.get(0).getImage()%>";
+	descContent = "<%=list.get(0).getTeacher()%>";
+	shareTitle = "<%=list.get(0).getName()%>";
+<%}%>
 mui.createConfirmDialog = function(info, btnInfo, cancelCallBack, acceptCallBack) {
 	var template = "<div style='width:80%;margin:30% 10%;border:1px solid #ddd;background-color: white;border-radius: 5px;'><div style='margin-top:10px;font-size:15px;text-align:center;'>讲座报名</div><hr style='margin-top:10px;margin-bottom:10px;'/><div style='margin-left:20px;margin-right:20px;height:200px;font-size:15px;'>{{info}}</div><div style='text-align:right;margin-bottom:10px;margin-right:20px;'><a id='createConfirmDialog_cancel' href='javascript:void(0);' style='margin-right:20px;text-decoration:none;font-size:15px;'>打赏5元</a><a id='createConfirmDialog_accept' href='javascript:void(0);' style='text-decoration:none;font-size:15px;'>{{btnInfo}}</a></div></div>";
 	var element = document.createElement('div');
@@ -311,6 +463,170 @@ mui.createConfirmDialog = function(info, btnInfo, cancelCallBack, acceptCallBack
 					window.location.href="/playDDCBLiveClass?course_id=" + courseId;
 			    });
 		    })
+			wx.config({
+				appId: 'wxbd6aef840715f99d',
+				timestamp: <%=result.get("timestamp")%>,
+				nonceStr: '<%=result.get("nonceStr")%>',
+				signature: '<%=result.get("signature")%>',
+				jsApiList: [
+					'onMenuShareQQ',
+					'onMenuShareTimeline',
+					'onMenuShareAppMessage',
+					'chooseWXPay'
+				]
+			});
+		    var currentImageSelectEle;
+		    function uploadShareImage(courseId, ele, e) {
+		    	currentImageSelectEle = ele;
+		    	 var confirmDialog = mui.createConfirmDialog("<div><p style='color:#2ab888;'>提示：各位看官，给我们点鼓励吧，好内容录制不易，要做下去需要各位都参与或贡献哦～</p></div><div>方式一：免费<p>点击讲座标题进入教室，将该讲座分享至朋友圈即可报名成功。</p></div><div>方式二：打赏5元<p>如不愿分享，支付5元报名费即可报名成功。</p></div>","取消",
+	    					function() {
+	    						confirmDialog.close();
+	    						document.getElementById("loadingToast").style.display = "";
+	    						mui.ajax({
+	    		            		url: '/userLiveClassDonateWeixinPay',
+	    		            		type: "POST",
+	    		            		data: {fee:"5.00",course_id:courseId},
+	    		            		success: function(data) {
+	    		            			document.getElementById("loadingToast").style.display = "none";
+	    		            			var jsonData = JSON.parse("{"+data+"}");
+	    		            			if(jsonData.ddcb_error_msg != null) {
+	    		            				alert(jsonData.ddcb_error_msg);
+	    		            			} else {
+	    		            				wx.chooseWXPay({
+	    		            		            timestamp: jsonData.timeStamp,
+	    		            		            nonceStr: jsonData.nonceStr,
+	    		            		            package: jsonData.package,
+	    		            		            signType: jsonData.signType,
+	    		            		            paySign: jsonData.paySign,
+	    		            		            success: function (res) {
+	    		            		            	if(res.errMsg != null && res.errMsg == "chooseWXPay:ok") {
+	    		            		            		currentImageSelectEle.setAttribute("disabled", true);
+	    		            		    		    	currentImageSelectEle.innerHTML = "已经报名";
+	    		            		            		alert("支付成功，您已经成功报名，请准时收看!");
+	    		            		            	} else {
+	    		            		            		alert("支付失败，报名失败！");
+	    		            		            	}																            
+	    		            		            },
+	    		            		            fail:function(res) {
+	    		            		            	alert(JSON.stringify(res));
+	    		            		            }
+	    		            		        });
+	    		            			}
+	    		            		},
+	    		            		error: function(status, error) {
+	    		            			document.getElementById("loadingToast").style.display = "none";
+	    		            			alert("支付失败， 报名失败！");
+	    		            		}
+	    		            	});
+	    					},
+	    					function() {
+	    						confirmDialog.close();
+	    						
+	    						//document.getElementById('image_select').click();	
+	    					}
+	    				);
+	    				confirmDialog.show();	    	
+		    }
+		    document.getElementById("image_select").onchange = function(event) {
+		    	currentImageSelectEle.setAttribute("disabled", true);
+		    	currentImageSelectEle.innerHTML = "已经报名";
+		    	document.getElementById("loadingToastTips").innerHTML = "正在上传数据";
+				document.getElementById("loadingToast").style.display = "";
+				mui.ajax({
+            		url: "/course/uploadUserShare",
+            		type: "POST",
+            		data: {courseId:currentImageSelectEle.getAttribute("course_id")},
+            		success: function(data) {
+            			document.getElementById("loadingToast").style.display = "none";
+        				document.getElementById("loadingToastTips").innerHTML = "数据加载中";
+        				document.getElementById("collection_toast").style.display = "";
+        				setTimeout(function(){document.getElementById("collection_toast").style.display = "none";}, 1500);
+            		},
+            		error: function(status, error) {
+            			document.getElementById("loadingToast").style.display = "none";
+        				document.getElementById("loadingToastTips").innerHTML = "数据加载中";
+            			alert("服务器暂时无法处理您的请求，请稍后重试！");
+            		}
+            	});
+		    }
+			function collectionClick(courseId, ele) {
+				this.event.stopPropagation();
+				document.getElementById("loadingToastTips").innerHTML = "正在处理请求";
+				document.getElementById("loadingToast").style.display = "";
+				mui.ajax({
+            		url: "/course/userCollectionCourse",
+            		type: "POST",
+            		data: {course_id:courseId},
+            		success: function(data) {
+            			document.getElementById("loadingToast").style.display = "none";
+        				document.getElementById("loadingToastTips").innerHTML = "数据加载中";
+            			if(data.error_code != "0") {
+            				alert(data.error_msg);
+            			} else {
+            				document.getElementById("collection_toast").style.display = "";
+            				setTimeout(function(){document.getElementById("collection_toast").style.display = "none";}, 1500);
+            				ele.setAttribute("disabled", "true");
+            				ele.innerHTML = "已经收藏";
+            			}
+            		},
+            		error: function(status, error) {
+            			document.getElementById("loadingToast").style.display = "none";
+        				document.getElementById("loadingToastTips").innerHTML = "数据加载中";
+            			alert("服务器暂时无法处理您的请求，请稍后重试！");
+            		}
+            	});
+			}
+			wx.ready(function() {
+				var handler = function(event) {
+					event.stopPropagation();
+					document.getElementById("loadingToast").style.display = "";
+					var ele = event.target;
+					var courseId = ele.getAttribute("course_id");
+					var coursePrice = ele.getAttribute("course_price");
+					var fee = parseInt(coursePrice);
+					var isVip = <%=userIsVip%> == 1 ? true : false;
+					if(isVip) fee = (fee*0.8).toFixed(2);
+					mui.ajax({
+	            		url: '/userLiveClassWeixinPay',
+	            		type: "POST",
+	            		data: {fee:coursePrice,course_id:courseId},
+	            		success: function(data) {
+	            			document.getElementById("loadingToast").style.display = "none";
+	            			var jsonData = JSON.parse("{"+data+"}");
+	            			if(jsonData.ddcb_error_msg != null) {
+	            				alert(jsonData.ddcb_error_msg);
+	            			} else {
+	            				wx.chooseWXPay({
+	            		            timestamp: jsonData.timeStamp,
+	            		            nonceStr: jsonData.nonceStr,
+	            		            package: jsonData.package,
+	            		            signType: jsonData.signType,
+	            		            paySign: jsonData.paySign,
+	            		            success: function (res) {
+	            		            	if(res.errMsg != null && res.errMsg == "chooseWXPay:ok") {
+	                        				ele.innerHTML = "点击进入";
+	                        				ele.removeEventListener('tap', handler);
+	                        				ele.addEventListener('tap', enterClass);
+	            		            		alert("支付成功!");
+	            		            	} else {
+	            		            		alert("支付失败！");
+	            		            	}																            
+	            		            },
+	            		            fail:function(res) {
+	            		            	alert(JSON.stringify(res));
+	            		            }
+	            		        });
+	            			}
+	            		},
+	            		error: function(status, error) {
+	            			alert("支付失败！");
+	            		}
+	            	});
+				}
+				mui(".buy_class").each(function(){
+					this.addEventListener('tap', handler);
+				});
+			});
 			function enterClass(event, btn) {
 				var ele = event == null ? btn : event.target;
 				var courseId = ele.getAttribute('course_id');
@@ -372,7 +688,24 @@ mui.createConfirmDialog = function(info, btnInfo, cancelCallBack, acceptCallBack
 							    						btnDiv.setAttribute('style', 'margin-top:5px');
 							    						browserDiv.innerHTML = "<img class='mui-media-object mui-pull-left' style='height:50px;width:80px;max-width:100px;' src='/files/imgs/"+data[i].image+"'><div class='mui-media-body'><h4 style='font-size:12px;margin-top:0px;margin-bottom:0px;'>"+data[i].name+"</h4><h6 style='color:#2ab888;margin-top:2px;margin-bottom:2px;' class='mui-ellipsis'><span style='font-size:16px;' class='mui-icon mui-icon-contact'></span>"+data[i].teacher+"</h6><h6 style='color:#888888;margin-top:2px;margin-bottom:2px;' class='mui-ellipsis'><span style='font-size:16px;' class='mui-icon mui-icon-compose'></span>播放时间"+data[i].course_date_readable+"</h6></div>";
 							    						btnDiv.innerHTML = "<div style='float:left;height:25px;line-height:25px;'><p style='font-size:12px;'>课程售价："+data[i].price+"元</p></div>";
-							    						
+							    						if(data[i].price != null && data[i].price != "" && data[i].price != "0") {
+							    							if(data[i].pay_status != null && data[i].pay_status=="1") {
+								    							btnDiv.innerHTML += "<div style='float:right;'><button course_id='"+data[i].id+"' style='height:25px;line-height:25px;padding:0px 5px;font-size:12px;' disabled>已经购买</button></div>";
+								    						} else {
+								    							btnDiv.innerHTML += "<div style='float:right;'><button class='buy_class' course_price='"+data[i].price+"' course_id='"+data[i].id+"' style='height:25px;line-height:25px;padding:0px 5px;font-size:12px;' disabled>购买课程</button></div>";
+								    						}
+							    						} else if(<%=userIsVip%> != 1){
+							    							if((data[i].screenshot == null || data[i].screenshot == "") && (data[i].donate_pay_status == null || data[i].donate_pay_status == 0)) {
+							    								btnDiv.innerHTML += "<div style='float:right;'><button onclick='uploadShareImage(\""+data[i].id+"\", this, event)' course_id='"+data[i].id+"' style='height:25px;line-height:25px;padding:0px 5px;font-size:12px;' disabled>我要报名</button></div>";
+							    							} else {
+							    								btnDiv.innerHTML += "<div style='float:right;'><button course_id='"+data[i].id+"' style='height:25px;line-height:25px;padding:0px 5px;font-size:12px;' disabled>已经报名</button></div>";
+							    							}
+							    						}
+														if(data[i].hasCollection == "1") {
+															btnDiv.innerHTML += "<div style='float:right;margin-right:5px;'><button onclick='collectionClick(\"" + data[i].id +"\")' style='height:25px;line-height:25px;padding:0px 5px;font-size:12px;' disabled>已经收藏</button></div>";
+							    						} else {
+							    							btnDiv.innerHTML += "<div style='float:right;margin-right:5px;'><button onclick='collectionClick(\"" + data[i].id +"\", this)' style='height:25px;line-height:25px;padding:0px 5px;font-size:12px;'>收藏课程</button></div>";
+							    						}
 														aNode.appendChild(browserDiv);
 														liNode.appendChild(aNode);
 														liNode.appendChild(btnDiv);
@@ -430,7 +763,24 @@ mui.createConfirmDialog = function(info, btnInfo, cancelCallBack, acceptCallBack
 							    						btnDiv.setAttribute('style', 'margin-top:5px');
 							    						browserDiv.innerHTML = "<img class='mui-media-object mui-pull-left' style='height:50px;width:80px;max-width:100px;' src='/files/imgs/"+data[i].image+"'><div class='mui-media-body'><h4 style='font-size:12px;margin-top:0px;margin-bottom:0px;'>"+data[i].name+"</h4><h6 style='color:#2ab888;margin-top:2px;margin-bottom:2px;' class='mui-ellipsis'><span style='font-size:16px;' class='mui-icon mui-icon-contact'></span>"+data[i].teacher+"</h6><h6 style='color:#888888;margin-top:2px;margin-bottom:2px;' class='mui-ellipsis'><span style='font-size:16px;' class='mui-icon mui-icon-compose'></span>播放时间"+data[i].course_date_readable+"</h6></div>";
 							    						btnDiv.innerHTML = "<div style='float:left;height:25px;line-height:25px;'><p style='font-size:12px;'>课程售价："+data[i].price+"元</p></div>";
-							    						
+							    						if(data[i].price != null && data[i].price != "" && data[i].price != "0") {
+							    							if(data[i].pay_status != null && data[i].pay_status=="1") {
+								    							btnDiv.innerHTML += "<div style='float:right;'><button course_id='"+data[i].id+"' style='height:25px;line-height:25px;padding:0px 5px;font-size:12px;' disabled>已经购买</button></div>";
+								    						} else {
+								    							btnDiv.innerHTML += "<div style='float:right;'><button class='buy_class' course_price='"+data[i].price+"' course_id='"+data[i].id+"' style='height:25px;line-height:25px;padding:0px 5px;font-size:12px;'>购买课程</button></div>";
+								    						}
+							    						} else if(<%=userIsVip%> != 1) {
+							    							if((data[i].screenshot == null || data[i].screenshot == "") && (data[i].donate_pay_status == null || data[i].donate_pay_status == 0)) {
+							    								btnDiv.innerHTML += "<div style='float:right;'><button onclick='uploadShareImage(\""+data[i].id+"\", this, event)' course_id='"+data[i].id+"' style='height:25px;line-height:25px;padding:0px 5px;font-size:12px;'>我要报名</button></div>";
+							    							} else {
+							    								btnDiv.innerHTML += "<div style='float:right;'><button course_id='"+data[i].id+"' style='height:25px;line-height:25px;padding:0px 5px;font-size:12px;' disabled>已经报名</button></div>";
+							    							}
+							    						}
+														if(data[i].hasCollection == "1") {
+															btnDiv.innerHTML += "<div style='float:right;margin-right:5px;'><button onclick='collectionClick(\"" + data[i].id +"\")' style='height:25px;line-height:25px;padding:0px 5px;font-size:12px;' disabled>已经收藏</button></div>";
+							    						} else {
+							    							btnDiv.innerHTML += "<div style='float:right;margin-right:5px;'><button onclick='collectionClick(\"" + data[i].id +"\", this)' style='height:25px;line-height:25px;padding:0px 5px;font-size:12px;'>收藏课程</button></div>";
+							    						}
 														aNode.appendChild(browserDiv);
 														liNode.appendChild(aNode);
 														liNode.appendChild(btnDiv);
@@ -461,5 +811,59 @@ mui.createConfirmDialog = function(info, btnInfo, cancelCallBack, acceptCallBack
 					});
 				});
 			})(mui);
+	wx.ready(function() {
+		setTimeout(function() {
+			wx.onMenuShareTimeline({
+				title : shareTitle, // 分享标题
+				link : lineLink, // 分享链接
+				imgUrl : imgUrl, // 分享图标
+				success : function() {
+					/* alert("报名成功！");
+					currentImageSelectEle.setAttribute("disabled", true);
+    		    	currentImageSelectEle.innerHTML = "已经报名";
+    		    	mui.ajax({
+                		url: "/course/uploadUserShare",
+                		type: "POST",
+                		data: {courseId:currentImageSelectEle.getAttribute("course_id")},
+                		success: function(data) {
+                			
+                		},
+                		error: function(status, error) {
+                			
+                		}
+                	}); */
+				},
+				cancel : function() {
+					//alert("您没有分享，报名失败！");
+				}
+			});
+			wx.onMenuShareAppMessage({
+				title : shareTitle, // 分享标题
+				desc : descContent, // 分享描述
+				link : lineLink, // 分享链接
+				imgUrl : imgUrl, // 分享图标
+				type : '', // 分享类型,music、video或link，不填默认为link
+				dataUrl : '', // 如果type是music或video，则要提供数据链接，默认为空
+				success : function() {
+					// 用户确认分享后执行的回调函数
+				},
+				cancel : function() {
+					// 用户取消分享后执行的回调函数
+				}
+			});
+			wx.onMenuShareQQ({
+				title : shareTitle, // 分享标题
+				desc : descContent, // 分享描述
+				link : lineLink, // 分享链接
+				imgUrl : imgUrl, // 分享图标
+				success : function() {
+					// 用户确认分享后执行的回调函数
+				},
+				cancel : function() {
+					// 用户取消分享后执行的回调函数
+				}
+			});
+		}, 500);
+	});
 </script>
 </html>

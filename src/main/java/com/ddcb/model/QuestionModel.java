@@ -5,31 +5,29 @@ import java.sql.Timestamp;
 public class QuestionModel {
 
 	private Long id;
-	private String open_id;
+	private String user_id;
 	private String question;
 	private Integer click_like;
 	private Long course_id;
-	private String headimgurl;
-	private String user_nickname;
+	private String user_name;
 	private String create_time_readable;
 	private Integer current_click_like;
 	private Timestamp create_time;
 	
 	public QuestionModel() {}
 
-	public QuestionModel(Long id, String open_id, String question, Integer click_like, Long course_id,
-			String user_nickname, String headimgurl, String create_time_readable, Integer current_click_like, Timestamp create_time) {
+	public QuestionModel(Long id, String user_id, String question, Integer click_like, Long course_id,
+			String user_name, String create_time_readable, Integer current_click_like, Timestamp create_time) {
 		super();
 		this.id = id;
-		this.open_id = open_id;
+		this.user_id = user_id;
 		this.question = question;
 		this.click_like = click_like;
 		this.course_id = course_id;
-		this.user_nickname = user_nickname;
-		this.headimgurl = headimgurl;
 		this.create_time_readable = create_time_readable;
 		this.create_time = create_time;
 		this.current_click_like = current_click_like;
+		this.user_name = user_name;
 	}
 
 	public Long getId() {
@@ -40,12 +38,20 @@ public class QuestionModel {
 		this.id = id;
 	}
 
-	public String getOpen_id() {
-		return open_id;
+	public String getUser_id() {
+		return user_id;
 	}
 
-	public void setOpen_id(String open_id) {
-		this.open_id = open_id;
+	public void setUser_id(String user_id) {
+		this.user_id = user_id;
+	}
+
+	public String getUser_name() {
+		return user_name;
+	}
+
+	public void setUser_name(String user_name) {
+		this.user_name = user_name;
 	}
 
 	public String getQuestion() {
@@ -78,22 +84,6 @@ public class QuestionModel {
 
 	public void setCreate_time(Timestamp create_time) {
 		this.create_time = create_time;
-	}
-
-	public String getHeadimgurl() {
-		return headimgurl;
-	}
-
-	public void setHeadimgurl(String headimgurl) {
-		this.headimgurl = headimgurl;
-	}
-
-	public String getUser_nickname() {
-		return user_nickname;
-	}
-
-	public void setUser_nickname(String user_nickname) {
-		this.user_nickname = user_nickname;
 	}
 
 	public String getCreate_time_readable() {

@@ -18,6 +18,10 @@ public class JspController {
 	@RequestMapping("/playDDCBOpenClass")
 	public String playDDCBOpenClass(HttpSession httpSession,
 			HttpServletRequest request) {
+		String phone_id = (String) request.getSession().getAttribute("WEIXIN_REG_USER_ID");
+		if(phone_id == null || phone_id.isEmpty()) {
+			return "redirect:/view/weixinview/login.html";
+		}
 		return "view/weixinview/ddcb_play_class";
 	}
 	
@@ -42,6 +46,10 @@ public class JspController {
 	@RequestMapping("/playDDCBLiveClass")
 	public String playDDCBLiveClass(HttpSession httpSession,
 			HttpServletRequest request) {
+		String phone_id = (String) request.getSession().getAttribute("WEIXIN_REG_USER_ID");
+		if(phone_id == null || phone_id.isEmpty()) {
+			return "redirect:/view/weixinview/login.html";
+		}
 		return "view/weixinview/ddcb_play_live_class";
 	}
 	

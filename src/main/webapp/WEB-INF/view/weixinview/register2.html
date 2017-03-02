@@ -68,27 +68,39 @@
 	<body>
 		<header class="mui-bar mui-bar-nav" style="background-color:#66d6a6;">
 			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left" style="color:white;"></a>
-			<h1 class="mui-title" style='text-align: center;color:white;font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;'>登录</h1>
+			<h1 class="mui-title" style='text-align: center;color:white;font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;'>完善您的个人信息</h1>
 		</header>
-		<div class="mui-content">
-			<form id='login-form' class="mui-input-group">
+		<div class="mui-content">		
+			<form class="mui-input-group">
 				<div class="mui-input-row">
-					<label>账号</label>
-					<input id='user_id' type="text" class="mui-input-clear mui-input" placeholder="请输入账号">
+					<label>姓名</label>
+					<input id='user_name' type="text" class="mui-input-clear mui-input" placeholder="请输入您的姓名">
 				</div>
 				<div class="mui-input-row">
-					<label>密码</label>
-					<input id='user_pwd' type="password" class="mui-input-clear mui-input" placeholder="请输入密码">
+					<label>学校</label>
+					<input id='school' type="text" class="mui-input-clear mui-input" placeholder="请输入您的学校">
 				</div>
+				<div class="mui-input-row">
+					<label>年级</label>
+					<input id='grade' type="text" class="mui-input-clear mui-input" placeholder="请输入您的年级">
+				</div>
+				<div class="mui-input-row">
+					<label>专业</label>
+					<input id='major' type="text" class="mui-input-clear mui-input" placeholder="请输入您的专业">
+				</div>
+				<div class="mui-input-row">
+					<label style="width:33%;">意向国家</label>
+					<input id='country' type="text" class="mui-input-clear mui-input" style="width:67%;" placeholder="请输入您的意向国家">
+				</div>				
 			</form>
+			
+			<p style="padding:10px 15px;">填写以上信息，专业顾问会免费帮您做背景评估和留学规划。<a id='reg' style="color:#66d6a6;" href="/getLiveClass">跳过此步</a><p>
 			<div class="mui-content-padded">
-				<button id='login' onclick="userLogin()" class="mui-btn mui-btn-block mui-btn-success" style="background-color:#66d6a6;">登录</button>
-				<div class="link-area"><a id='reg' style="color:#66d6a6;" href="register.html">注册账号</a> <span class="spliter">|</span> <a href="forget_pwd.html" style="color:#66d6a6;" id='forgetPassword'>忘记密码</a>
-				</div>
+				<button id='reg_btn' onclick="register()" class="mui-btn mui-btn-block mui-btn-success" style="background-color:#66d6a6;">提交</button>
 			</div>
-		</div>		
+		</div>	
 	</body>
 	<script src="/js/weixinjs/mui.min.js"></script>
-	<script src="/js/weixinjs/login.js"></script>
+	<script src="/js/weixinjs/register2.js"></script>
 
 </html>
