@@ -126,6 +126,13 @@ long currentTime = System.currentTimeMillis();
 	<script src="/js/weixinjs/jquery.countdown.js"></script>
 	<script src="https://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
 	<script>
+	var isAndroid = false;
+	var courseduration = <%=courseLength%>;
+	courseduration = (courseduration-1) * 60;
+	var browserInfo = navigator.userAgent;
+	if(browserInfo.indexOf("Android") != -1) {
+		isAndroid = true;
+	}
 	$("#myTab li a").click(function() {
 	    $(this).parent().addClass("active");
 	    $(this).parent().siblings().removeClass("active");
@@ -138,7 +145,8 @@ long currentTime = System.currentTimeMillis();
 	        $(".navbar-fixed-bottom").show();
 	    }
 	});
-	var globalPlayStatus = "stop";
+	var playFirst = true;
+	var seekingFirst = true;
 	var playVideoEvent = 1;
 	var pauseVideoEvent = 1;
 	var seekingVideoEvent = 1;
@@ -176,98 +184,75 @@ long currentTime = System.currentTimeMillis();
 	    return fmt;           
 	} 
 	document.getElementById('video').setAttribute("width", document.body.clientWidth);
+	var year = <%=courseDate.substring(0, 4)%>;
+	var month = <%=courseDate.substring(5, 7)%>;
+	var day = <%=courseDate.substring(8, 10)%>;
+	var hour = <%=courseDate.substring(11, 13)%>;
+	var minute = <%=courseDate.substring(14, 16)%>;
+	var seconds = <%=courseDate.substring(17, 19)%>;
+	var courseDate = new Date(year, month-1, day, hour, minute, seconds).getTime() / 1000;
+	var currentDate = new Date().getTime() / 1000;
+	
+	function playClass() {
+		document.getElementById("playClassTimeTips").style.display = "none";
+		document.getElementById("video_div").style.display = "";
+		document.getElementById("video").play();
+	}
+	
+	function classHasFinish() {
+		currentDate = new Date().getTime() / 1000;
+		if(currentDate - courseDate >=courseduration) {
+			document.getElementById("video").pause();
+			<%if(("exist").equals(parentCourseExist)) {%>
+			document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>录播讲座已经结束，感谢您的关注！</p><p id='redirect_open_class' style='color:white;'>梦想星辰已收录该讲座</p>";
+			var countDown = 5;
+			var timer = setInterval(function(){
+				if(countDown == 0) {
+					clearInterval(timer);
+					window.location.href = "/playDDCBOpenClass?course_id=<%=parentCm.getId() %>";
+				} else {
+					document.getElementById("redirect_open_class").innerHTML = "梦想星辰已收录该讲座,"+countDown+"秒后自动跳转。";
+				}
+				countDown--;
+			}, 1000);
+			<%} else {%>
+			document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>录播讲座已经结束，感谢您的关注！</p><p style='color:white;'>梦想星辰正在收录该讲座。</p>";
+			<%}%>		
+			document.getElementById("playClassTimeTips").style.display = "";
+			document.getElementById("video_div").style.display = "none";
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
 	document.addEventListener("WeixinJSBridgeReady", function () {
-		var year = <%=courseDate.substring(0, 4)%>;
-		var month = <%=courseDate.substring(5, 7)%>;
-		var day = <%=courseDate.substring(8, 10)%>;
-		var hour = <%=courseDate.substring(11, 13)%>;
-		var minute = <%=courseDate.substring(14, 16)%>;
-		var seconds = <%=courseDate.substring(17, 19)%>;
-		var courseDate = new Date(year, month-1, day, hour, minute, seconds).getTime() / 1000;
-		var currentDate = new Date().getTime() / 1000;
 		var courseLength = parseInt("<%=courseLength%>") * 60;
-		
+		var playTriggerPlay = false;
 		document.getElementById("video").addEventListener('pause', function(){
-			globalPlayStatus = "pause";
+			
 		});
 		document.getElementById("video").addEventListener('play', function(){
-			if(playVideoEvent > 2) {
-				document.getElementById("video").pause();
-				currentDate = new Date().getTime() / 1000;
-				document.getElementById("video").currentTime = currentDate - courseDate;
-				if(currentDate - courseDate >= document.getElementById("video").duration) {
-					//document.getElementById("video").pause();
-					<%if(("exist").equals(parentCourseExist)) {%>
-					document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>录播讲座已经结束，感谢您的关注！</p><p id='redirect_open_class' style='color:white;'>梦想星辰已收录该讲座</p>";
-					var countDown = 5;
-					var timer = setInterval(function(){
-						if(countDown == 0) {
-							clearInterval(timer);
-							window.location.href = "/playDDCBOpenClass?course_id=<%=parentCm.getId() %>";
-						} else {
-							document.getElementById("redirect_open_class").innerHTML = "梦想星辰已收录该讲座,"+countDown+"秒后自动跳转。";
-						}
-						countDown--;
-					}, 1000);
-					<%} else {%>
-					document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>录播讲座已经结束，感谢您的关注！</p><p style='color:white;'>梦想星辰正在收录该讲座。</p>";
-					<%}%>		
-					document.getElementById("playClassTimeTips").style.display = "";
-					document.getElementById("video_div").style.display = "none";
-				} else {
-					document.getElementById("playClassTimeTips").style.display = "none";
-					document.getElementById("video_div").style.display = "";
-					document.getElementById("video").play();
-					globalPlayStatus = "play";
-					playVideoEvent = 2;
-				}
-			} else {
-				playVideoEvent++;
-			}
-		});
-		document.getElementById("video").addEventListener('seeking', function(){
-			if(seekingVideoEvent == 1) {
-				seekingVideoEvent++;
+			alert("1111");
+			if(playFirst || playTriggerPlay) {
+				playFirst = false;
+				playTriggerPlay = false;
 				return;
 			}
-			seekingVideoEvent++;
-			if(seekingVideoEvent == 4) {
-				document.getElementById("video").pause();
-				currentDate = new Date().getTime() / 1000;
-				document.getElementById("video").currentTime = currentDate - courseDate;
-				if(currentDate - courseDate >= document.getElementById("video").duration) {
-					//document.getElementById("video").pause();
-					<%if(("exist").equals(parentCourseExist)) {%>
-					document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>录播讲座已经结束，感谢您的关注！</p><p id='redirect_open_class' style='color:white;'>梦想星辰已收录该讲座</p>";
-					var countDown = 5;
-					var timer = setInterval(function(){
-						if(countDown == 0) {
-							clearInterval(timer);
-							window.location.href = "/playDDCBOpenClass?course_id=<%=parentCm.getId() %>";
-						} else {
-							document.getElementById("redirect_open_class").innerHTML = "梦想星辰已收录该讲座,"+countDown+"秒后自动跳转。";
-						}
-						countDown--;
-					}, 1000);
-					<%} else {%>
-					document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>录播讲座已经结束，感谢您的关注！</p><p style='color:white;'>梦想星辰正在收录该讲座，<br/>请稍后查看。</p>";
-					<%}%>		
-					document.getElementById("playClassTimeTips").style.display = "";
-					document.getElementById("video_div").style.display = "none";
-				} else {
-					document.getElementById("playClassTimeTips").style.display = "none";
-					document.getElementById("video_div").style.display = "";
-					document.getElementById("video").play();
-					globalPlayStatus = "play";
-					seekingVideoEvent = 2;
-					playVideoEvent = 2;
-				}
+			if(classHasFinish()) {return;}
+			currentDate = new Date().getTime() / 1000;
+			document.getElementById("video").pause();
+			document.getElementById("video").currentTime = currentDate - courseDate;
+			playTriggerPlay = true;
+			setTimeout(function(){alert(2222);document.getElementById("video").play();},2000);
+		});
+		document.getElementById("video").addEventListener('seeking', function(){
+			if(seekingFirst) {
+				seekingFirst = false;
+				return;
 			}
 		});
 		if(courseDate>currentDate) {
-			//document.getElementById("video").style.display = "none";
-			//document.getElementById("playClassTimeTips").style.display = "";
-			//document.getElementById("video").pause();
 			document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>播放讲座时间：<%=courseDateReadable%></p><p id='time_counter' style='color:white;'></p>";
 			var ts = new Date(year, month-1, day, hour, minute, seconds);
 			$('#countdown').countdown({
@@ -278,175 +263,35 @@ long currentTime = System.currentTimeMillis();
 					message += hours + " 小时" + ", ";
 					message += minutes + " 分钟" + ", ";
 					message += seconds + " 秒" + " <br />";
-					//message += "欢迎您收看点豆成兵录播课！";
 					$('#time_counter').html(message);
 					if(days == 0 && hours == 0 && minutes == 0 && seconds == 0) {
-						var hasSetTime = false;
-						document.getElementById("video").addEventListener("timeupdate", function(){
-							if(!hasSetTime && document.getElementById("video").duration > 1) {
-								hasSetTime = true;
-								document.getElementById("video").pause();
-								currentDate = new Date().getTime() / 1000;
-								document.getElementById("video").currentTime = currentDate - courseDate;
-								if(currentDate - courseDate >= document.getElementById("video").duration) {
-									//document.getElementById("video").pause();
-									<%if(("exist").equals(parentCourseExist)) {%>
-									document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>录播讲座已经结束，感谢您的关注！</p><p id='redirect_open_class' style='color:white;'>梦想星辰已收录该讲座</p>";
-									var countDown = 5;
-									var timer = setInterval(function(){
-										if(countDown == 0) {
-											clearInterval(timer);
-											window.location.href = "/playDDCBOpenClass?course_id=<%=parentCm.getId() %>";
-										} else {
-											document.getElementById("redirect_open_class").innerHTML = "梦想星辰已收录该讲座,"+countDown+"秒后自动跳转。";
-										}
-										countDown--;
-									}, 1000);
-									<%} else {%>
-									document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>录播讲座已经结束，感谢您的关注！</p><p style='color:white;'>梦想星辰正在收录该讲座，<br/>请稍后查看。</p>";
-									<%}%>		
-									document.getElementById("playClassTimeTips").style.display = "";
-									document.getElementById("video_div").style.display = "none";
-								} else {
-									document.getElementById("playClassTimeTips").style.display = "none";
-									document.getElementById("video_div").style.display = "";
-									document.getElementById("video").play();
-									globalPlayStatus = "play";
-								}
-							}
-						});
-						document.getElementById("playClassTimeTips").style.display = "none";
-						document.getElementById("video_div").style.display = "";
-						document.getElementById("video").currentTime = 0;
-						document.getElementById("video").play();
-						globalPlayStatus = "play";
 						
-						document.getElementById("video").addEventListener('ended', function() {
-							currentDate = new Date().getTime() / 1000;
-							document.getElementById("video").currentTime = currentDate - courseDate;
-							if (currentDate - courseDate >= document.getElementById("video").duration) {
-								globalPlayStatus = "end";
-								//document.getElementById("video").pause();
-								<%if(("exist").equals(parentCourseExist)) {%>
-								document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>录播讲座已经结束，感谢您的关注！</p><p id='redirect_open_class' style='color:white;'>梦想星辰已收录该讲座</p>";
-								var countDown = 5;
-								var timer = setInterval(function() {
-									if (countDown == 0) {
-										clearInterval(timer);
-										window.location.href = "/playDDCBOpenClass?course_id=<%=parentCm.getId() %>";
-									} else {
-										document.getElementById("redirect_open_class").innerHTML = "梦想星辰已收录该讲座," + countDown + "秒后自动跳转。";
-									}
-									countDown--;
-								}, 1000);
-								<%} else {%>
-								document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>录播讲座已经结束，感谢您的关注！</p><p style='color:white;'>梦想星辰正在收录该讲座，<br/>请稍后查看。</p>";
-								<%}%>
-								document.getElementById("playClassTimeTips").style.display = "";
-								document.getElementById("video_div").style.display = "none";
-							} else {
-								document.getElementById("playClassTimeTips").style.display = "none";
-								document.getElementById("video_div").style.display = "";
-								document.getElementById("video").play();
-								globalPlayStatus = "play";
-								seekingVideoEvent = 2;
-								playVideoEvent = 2;
-							}
-						}, false);
 					}
 				}
 			});
+		}
+		if(courseDate + courseLength < currentDate) {
+			document.getElementById("video").pause();
+			<%if(("exist").equals(parentCourseExist)) {%>
+			document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>录播讲座已经结束，感谢您的关注！</p><p id='redirect_open_class' style='color:white;'>梦想星辰已收录该讲座</p>";
+			var countDown = 5;
+			var timer = setInterval(function(){
+				if(countDown == 0) {
+					clearInterval(timer);
+					window.location.href = "/playDDCBOpenClass?course_id=<%=parentCm.getId() %>";
+				} else {
+					document.getElementById("redirect_open_class").innerHTML = "梦想星辰已收录该讲座,"+countDown+"秒后自动跳转。";
+				}
+				countDown--;
+			}, 1000);
+			<%} else {%>
+			document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>录播讲座已经结束，感谢您的关注！</p><p style='color:white;'>梦想星辰正在收录该讲座，<br/>请稍后查看。</p>";
+			<%}%>		
 		} else {
-			if(courseDate + courseLength < currentDate) {
-				//$("#question_publish").hide();
-				document.getElementById("video").pause();
-				<%if(("exist").equals(parentCourseExist)) {%>
-				document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>录播讲座已经结束，感谢您的关注！</p><p id='redirect_open_class' style='color:white;'>梦想星辰已收录该讲座</p>";
-				var countDown = 5;
-				var timer = setInterval(function(){
-					if(countDown == 0) {
-						clearInterval(timer);
-						window.location.href = "/playDDCBOpenClass?course_id=<%=parentCm.getId() %>";
-					} else {
-						document.getElementById("redirect_open_class").innerHTML = "梦想星辰已收录该讲座,"+countDown+"秒后自动跳转。";
-					}
-					countDown--;
-				}, 1000);
-				<%} else {%>
-				document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>录播讲座已经结束，感谢您的关注！</p><p style='color:white;'>梦想星辰正在收录该讲座，<br/>请稍后查看。</p>";
-				<%}%>		
-			} else {
-				var hasSetTime = false;
-				document.getElementById("video").addEventListener("timeupdate", function(){
-					if(!hasSetTime && document.getElementById("video").duration > 1) {
-						hasSetTime = true;
-						document.getElementById("video").pause();
-						currentDate = new Date().getTime() / 1000;
-						document.getElementById("video").currentTime = currentDate - courseDate;
-						if(currentDate - courseDate >= document.getElementById("video").duration) {
-							//document.getElementById("video").pause();
-							<%if(("exist").equals(parentCourseExist)) {%>
-							document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>录播讲座已经结束，感谢您的关注！</p><p id='redirect_open_class' style='color:white;'>梦想星辰已收录该讲座</p>";
-							var countDown = 5;
-							var timer = setInterval(function(){
-								if(countDown == 0) {
-									clearInterval(timer);
-									window.location.href = "/playDDCBOpenClass?course_id=<%=parentCm.getId() %>";
-								} else {
-									document.getElementById("redirect_open_class").innerHTML = "梦想星辰已收录该讲座,"+countDown+"秒后自动跳转。";
-								}
-								countDown--;
-							}, 1000);
-							<%} else {%>
-							document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>录播讲座已经结束，感谢您的关注！</p><p style='color:white;'>梦想星辰正在收录该讲座，<br/>请稍后查看。</p>";
-							<%}%>		
-							document.getElementById("playClassTimeTips").style.display = "";
-							document.getElementById("video_div").style.display = "none";
-						} else {
-							document.getElementById("playClassTimeTips").style.display = "none";
-							document.getElementById("video_div").style.display = "";
-							document.getElementById("video").play();
-							globalPlayStatus = "play";
-						}
-					}
-				});
-				document.getElementById("video").addEventListener('ended', function(){
-					currentDate = new Date().getTime() / 1000;
-					document.getElementById("video").currentTime = currentDate - courseDate;
-					if(currentDate - courseDate >= document.getElementById("video").duration) {
-						globalPlayStatus = "end";
-						//document.getElementById("video").pause();
-						<%if(("exist").equals(parentCourseExist)) {%>
-						document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>录播讲座已经结束，感谢您的关注！</p><p id='redirect_open_class' style='color:white;'>梦想星辰已收录该讲座</p>";
-						var countDown = 5;
-						var timer = setInterval(function(){
-							if(countDown == 0) {
-								clearInterval(timer);
-								window.location.href = "/playDDCBOpenClass?course_id=<%=parentCm.getId() %>";
-							} else {
-								document.getElementById("redirect_open_class").innerHTML = "梦想星辰已收录该讲座,"+countDown+"秒后自动跳转。";
-							}
-							countDown--;
-						}, 1000);
-						<%} else {%>
-						document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>录播讲座已经结束，感谢您的关注！</p><p style='color:white;'>梦想星辰正在收录该讲座，<br/>请稍后查看。</p>";
-						<%}%>		
-						document.getElementById("playClassTimeTips").style.display = "";
-						document.getElementById("video_div").style.display = "none";
-					} else {
-						document.getElementById("playClassTimeTips").style.display = "none";
-						document.getElementById("video_div").style.display = "";
-						document.getElementById("video").play();
-						globalPlayStatus = "play";
-						seekingVideoEvent = 2;
-						playVideoEvent = 2;
-					}
-				}, false);
-				document.getElementById("video").play();
-				globalPlayStatus = "play";
-			}
+			playClass();
 		}
 	});
+	
 	wx.config({
 		appId: 'wxbd6aef840715f99d',
 		timestamp: <%=result.get("timestamp")%>,

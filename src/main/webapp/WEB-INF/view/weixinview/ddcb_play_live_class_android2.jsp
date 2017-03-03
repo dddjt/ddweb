@@ -126,6 +126,14 @@ long currentTime = System.currentTimeMillis();
 	<script src="/js/weixinjs/jquery.countdown.js"></script>
 	<script src="https://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
 	<script>
+	alert("android");
+	var isAndroid = false;
+	var courseduration = <%=courseLength%>;
+	courseduration = (courseduration-1) * 60;
+	var browserInfo = navigator.userAgent;
+	if(browserInfo.indexOf("Android") != -1) {
+		isAndroid = true;
+	}
 	$("#myTab li a").click(function() {
 	    $(this).parent().addClass("active");
 	    $(this).parent().siblings().removeClass("active");
@@ -142,6 +150,7 @@ long currentTime = System.currentTimeMillis();
 	var playVideoEvent = 1;
 	var pauseVideoEvent = 1;
 	var seekingVideoEvent = 1;
+	var androidSeekingVideoEvent = 1;
 	Date.prototype.pattern=function(fmt) {           
 	    var o = {           
 	    "M+" : this.getMonth()+1, //月份           
@@ -186,17 +195,39 @@ long currentTime = System.currentTimeMillis();
 		var courseDate = new Date(year, month-1, day, hour, minute, seconds).getTime() / 1000;
 		var currentDate = new Date().getTime() / 1000;
 		var courseLength = parseInt("<%=courseLength%>") * 60;
-		
+		var isFirstPause = true;
+		var isHandPlay = true;
+		var androidSeek = false;
 		document.getElementById("video").addEventListener('pause', function(){
+			if(isFirstPause) {
+				isFirstPause = false;
+				//document.getElementById("video").currentTime = currentDate - courseDate;
+			}
 			globalPlayStatus = "pause";
 		});
 		document.getElementById("video").addEventListener('play', function(){
-			if(playVideoEvent > 2) {
+			if(!isFirstPause && isHandPlay) {
+				isHandPlay = false;
+				androidSeek = true;
 				document.getElementById("video").pause();
-				currentDate = new Date().getTime() / 1000;
 				document.getElementById("video").currentTime = currentDate - courseDate;
-				if(currentDate - courseDate >= document.getElementById("video").duration) {
-					//document.getElementById("video").pause();
+				//document.getElementById("video").play();
+				return;
+			}
+			/* if(isAndroid && isFirstEnter) {
+				alert("play pause");
+				isFirstEnter = false;
+				document.getElementById("video").pause();
+				document.getElementById("video").currentTime = currentDate - courseDate;
+			} */
+			if(playVideoEvent > 2) {
+				currentDate = new Date().getTime() / 1000;
+				if(!isAndroid) {
+					document.getElementById("video").pause();
+				}
+				document.getElementById("video").currentTime = currentDate - courseDate;
+				if((!isAndroid && currentDate - courseDate >= document.getElementById("video").duration) || (isAndroid && currentDate - courseDate >=courseduration)) {
+					document.getElementById("video").pause();
 					<%if(("exist").equals(parentCourseExist)) {%>
 					document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>录播讲座已经结束，感谢您的关注！</p><p id='redirect_open_class' style='color:white;'>梦想星辰已收录该讲座</p>";
 					var countDown = 5;
@@ -217,7 +248,7 @@ long currentTime = System.currentTimeMillis();
 				} else {
 					document.getElementById("playClassTimeTips").style.display = "none";
 					document.getElementById("video_div").style.display = "";
-					document.getElementById("video").play();
+					if(!isAndroid)document.getElementById("video").play();
 					globalPlayStatus = "play";
 					playVideoEvent = 2;
 				}
@@ -226,17 +257,50 @@ long currentTime = System.currentTimeMillis();
 			}
 		});
 		document.getElementById("video").addEventListener('seeking', function(){
+			if(isAndroid && androidSeek) {
+				androidSeek = false;
+				currentDate = new Date().getTime() / 1000;
+				document.getElementById("video").currentTime = currentDate - courseDate;
+				if((!isAndroid && currentDate - courseDate >= document.getElementById("video").duration) || (isAndroid && currentDate - courseDate >=courseduration)) {
+					document.getElementById("video").pause();
+					<%if(("exist").equals(parentCourseExist)) {%>
+					document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>录播讲座已经结束，感谢您的关注！</p><p id='redirect_open_class' style='color:white;'>梦想星辰已收录该讲座</p>";
+					var countDown = 5;
+					var timer = setInterval(function(){
+						if(countDown == 0) {
+							clearInterval(timer);
+							window.location.href = "/playDDCBOpenClass?course_id=<%=parentCm.getId() %>";
+						} else {
+							document.getElementById("redirect_open_class").innerHTML = "梦想星辰已收录该讲座,"+countDown+"秒后自动跳转。";
+						}
+						countDown--;
+					}, 1000);
+					<%} else {%>
+					document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>录播讲座已经结束，感谢您的关注！</p><p style='color:white;'>梦想星辰正在收录该讲座，<br/>请稍后查看。</p>";
+					<%}%>		
+					document.getElementById("playClassTimeTips").style.display = "";
+					document.getElementById("video_div").style.display = "none";
+				} else {
+					document.getElementById("playClassTimeTips").style.display = "none";
+					document.getElementById("video_div").style.display = "";
+					document.getElementById("video").play();
+					globalPlayStatus = "play";
+					androidSeekingVideoEvent = 2;
+					playVideoEvent = 2;
+				}
+				return;
+			}
 			if(seekingVideoEvent == 1) {
 				seekingVideoEvent++;
 				return;
 			}
 			seekingVideoEvent++;
 			if(seekingVideoEvent == 4) {
-				document.getElementById("video").pause();
 				currentDate = new Date().getTime() / 1000;
+				document.getElementById("video").pause();
 				document.getElementById("video").currentTime = currentDate - courseDate;
-				if(currentDate - courseDate >= document.getElementById("video").duration) {
-					//document.getElementById("video").pause();
+				if((!isAndroid && currentDate - courseDate >= document.getElementById("video").duration) || (isAndroid && currentDate - courseDate >=courseduration)) {
+					document.getElementById("video").pause();
 					<%if(("exist").equals(parentCourseExist)) {%>
 					document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>录播讲座已经结束，感谢您的关注！</p><p id='redirect_open_class' style='color:white;'>梦想星辰已收录该讲座</p>";
 					var countDown = 5;
@@ -281,50 +345,15 @@ long currentTime = System.currentTimeMillis();
 					//message += "欢迎您收看点豆成兵录播课！";
 					$('#time_counter').html(message);
 					if(days == 0 && hours == 0 && minutes == 0 && seconds == 0) {
-						var hasSetTime = false;
-						document.getElementById("video").addEventListener("timeupdate", function(){
-							if(!hasSetTime && document.getElementById("video").duration > 1) {
-								hasSetTime = true;
-								document.getElementById("video").pause();
-								currentDate = new Date().getTime() / 1000;
-								document.getElementById("video").currentTime = currentDate - courseDate;
-								if(currentDate - courseDate >= document.getElementById("video").duration) {
-									//document.getElementById("video").pause();
-									<%if(("exist").equals(parentCourseExist)) {%>
-									document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>录播讲座已经结束，感谢您的关注！</p><p id='redirect_open_class' style='color:white;'>梦想星辰已收录该讲座</p>";
-									var countDown = 5;
-									var timer = setInterval(function(){
-										if(countDown == 0) {
-											clearInterval(timer);
-											window.location.href = "/playDDCBOpenClass?course_id=<%=parentCm.getId() %>";
-										} else {
-											document.getElementById("redirect_open_class").innerHTML = "梦想星辰已收录该讲座,"+countDown+"秒后自动跳转。";
-										}
-										countDown--;
-									}, 1000);
-									<%} else {%>
-									document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>录播讲座已经结束，感谢您的关注！</p><p style='color:white;'>梦想星辰正在收录该讲座，<br/>请稍后查看。</p>";
-									<%}%>		
-									document.getElementById("playClassTimeTips").style.display = "";
-									document.getElementById("video_div").style.display = "none";
-								} else {
-									document.getElementById("playClassTimeTips").style.display = "none";
-									document.getElementById("video_div").style.display = "";
-									document.getElementById("video").play();
-									globalPlayStatus = "play";
-								}
-							}
-						});
 						document.getElementById("playClassTimeTips").style.display = "none";
 						document.getElementById("video_div").style.display = "";
 						document.getElementById("video").currentTime = 0;
-						document.getElementById("video").play();
+						if(!isAndroid)document.getElementById("video").play();
 						globalPlayStatus = "play";
-						
 						document.getElementById("video").addEventListener('ended', function() {
 							currentDate = new Date().getTime() / 1000;
 							document.getElementById("video").currentTime = currentDate - courseDate;
-							if (currentDate - courseDate >= document.getElementById("video").duration) {
+							if ((!isAndroid && currentDate - courseDate >= document.getElementById("video").duration) || (isAndroid && currentDate - courseDate >=courseduration)) {
 								globalPlayStatus = "end";
 								//document.getElementById("video").pause();
 								<%if(("exist").equals(parentCourseExist)) {%>
@@ -347,7 +376,7 @@ long currentTime = System.currentTimeMillis();
 							} else {
 								document.getElementById("playClassTimeTips").style.display = "none";
 								document.getElementById("video_div").style.display = "";
-								document.getElementById("video").play();
+								if(!isAndroid)document.getElementById("video").play();
 								globalPlayStatus = "play";
 								seekingVideoEvent = 2;
 								playVideoEvent = 2;
@@ -378,12 +407,11 @@ long currentTime = System.currentTimeMillis();
 			} else {
 				var hasSetTime = false;
 				document.getElementById("video").addEventListener("timeupdate", function(){
-					if(!hasSetTime && document.getElementById("video").duration > 1) {
+					if(!hasSetTime && document.getElementById("video").duration > 1 || (isAndroid && !hasSetTime)) {
 						hasSetTime = true;
-						document.getElementById("video").pause();
-						currentDate = new Date().getTime() / 1000;
-						document.getElementById("video").currentTime = currentDate - courseDate;
-						if(currentDate - courseDate >= document.getElementById("video").duration) {
+						if(!isAndroid) document.getElementById("video").pause();
+						if(!isAndroid) document.getElementById("video").currentTime = currentDate - courseDate;
+						if((!isAndroid && currentDate - courseDate >= document.getElementById("video").duration) || (isAndroid && currentDate - courseDate >=courseduration)) {
 							//document.getElementById("video").pause();
 							<%if(("exist").equals(parentCourseExist)) {%>
 							document.getElementById("playClassTimeTips").innerHTML = "<p style='color:white;padding-top:50px;'>录播讲座已经结束，感谢您的关注！</p><p id='redirect_open_class' style='color:white;'>梦想星辰已收录该讲座</p>";
@@ -405,15 +433,16 @@ long currentTime = System.currentTimeMillis();
 						} else {
 							document.getElementById("playClassTimeTips").style.display = "none";
 							document.getElementById("video_div").style.display = "";
-							document.getElementById("video").play();
+							if(!isAndroid)document.getElementById("video").play();
 							globalPlayStatus = "play";
+							
 						}
 					}
 				});
 				document.getElementById("video").addEventListener('ended', function(){
 					currentDate = new Date().getTime() / 1000;
 					document.getElementById("video").currentTime = currentDate - courseDate;
-					if(currentDate - courseDate >= document.getElementById("video").duration) {
+					if((!isAndroid && currentDate - courseDate >= document.getElementById("video").duration) || (isAndroid && currentDate - courseDate >=courseduration)) {
 						globalPlayStatus = "end";
 						//document.getElementById("video").pause();
 						<%if(("exist").equals(parentCourseExist)) {%>
@@ -436,7 +465,7 @@ long currentTime = System.currentTimeMillis();
 					} else {
 						document.getElementById("playClassTimeTips").style.display = "none";
 						document.getElementById("video_div").style.display = "";
-						document.getElementById("video").play();
+						if(!isAndroid)document.getElementById("video").play();
 						globalPlayStatus = "play";
 						seekingVideoEvent = 2;
 						playVideoEvent = 2;

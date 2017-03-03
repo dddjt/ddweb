@@ -50,7 +50,13 @@ public class JspController {
 		if(phone_id == null || phone_id.isEmpty()) {
 			return "redirect:/view/weixinview/login.html";
 		}
-		return "view/weixinview/ddcb_play_live_class";
+		String userAgent = request.getHeader("user-agent");
+		if(userAgent!=null) userAgent = userAgent.toLowerCase();
+		if(userAgent != null && userAgent.indexOf("android") != -1) {
+			return "view/weixinview/ddcb_play_live_class_android";
+		} else {
+			return "view/weixinview/ddcb_play_live_class";
+		}
 	}
 	
 	@RequestMapping("/weixin/getDDCBUserCenter")
